@@ -1,0 +1,4 @@
+This is a sample document for DocsBot.
+DocsBot is a chatbot that can answer questions based on your documents.
+It uses RAG (Retrieval Augmented Generation) to find relevant information.
+This is a test to see if ingestion works.

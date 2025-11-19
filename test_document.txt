@@ -1,0 +1,7 @@
+This is a sample document for testing DocsBot.
+
+DocsBot is a chatbot that can answer questions about your documents.
+
+It uses RAG (Retrieval Augmented Generation) to provide accurate answers based on the content of uploaded documents.
+
+This sample file contains information about DocsBot functionality and features.
