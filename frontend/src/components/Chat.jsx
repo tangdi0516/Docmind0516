@@ -15,8 +15,8 @@ const Chat = () => {
     const [loading, setLoading] = useState(false);
     const messagesEndRef = useRef(null);
 
-    // 3. 使用环境变量获取后端地址
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    // [核弹级修复] 直接硬编码线上地址，不再依赖环境变量
+    const API_BASE_URL = 'https://api.docmind.com.au';
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

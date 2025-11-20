@@ -14,8 +14,8 @@ const Upload = () => {
     const [status, setStatus] = useState('idle'); // idle, uploading, training, success, error
     const [message, setMessage] = useState('');
 
-    // 3. 使用环境变量获取后端地址 (兼容本地和线上)
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    // [核弹级修复] 直接硬编码线上地址
+    const API_BASE_URL = 'https://api.docmind.com.au';
 
     const handleFileChange = (e) => {
         if (e.target.files && e.target.files[0]) {
