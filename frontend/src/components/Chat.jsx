@@ -8,15 +8,38 @@ const Chat = () => {
     // 2. 获取当前用户对象
     const { user } = useUser();
 
-    const [messages, setMessages] = useState([
-        { role: 'assistant', content: 'Hello! I am your DocsBot clone. Ask me anything about your documents.' }
-    ]);
+    const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
+    const [botName, setBotName] = useState('DocMind');
     const messagesEndRef = useRef(null);
 
-    // [核弹级修复] 直接硬编码线上地址，不再依赖环境变量
-    const API_BASE_URL = 'https://api.docmind.com.au';
+    // [Temporary] Switch to localhost to fix chat error
+    const API_BASE_URL = 'http://localhost:8000';
+
+    useEffect(() => {
+        // Fetch bot settings
+        const fetchSettings = async () => {
+            if (!user) return;
+            try {
+                const response = await axios.get(`${API_BASE_URL}/user/settings`, {
+                    headers: { 'user-id': user.id }
+                });
+                setBotName(response.data.bot_name || 'DocMind');
+
+                // Set initial message with custom name
+                setMessages([
+                    { role: 'assistant', content: `Hello! I am ${response.data.bot_name || 'DocMind'}. Ask me anything about your documents.` }
+                ]);
+            } catch (error) {
+                console.error("Error fetching settings:", error);
+                setMessages([
+                    { role: 'assistant', content: 'Hello! I am DocMind. Ask me anything about your documents.' }
+                ]);
+            }
+        };
+        fetchSettings();
+    }, [user]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

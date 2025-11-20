@@ -1,2 +1,41 @@
-backend/.env
+# Dependencies
+node_modules/
+venv/
+__pycache__/
+
+# Build outputs
+dist/
+build/
+*.pyc
+*.pyo
+
+# Environment variables
 .env
+.env.local
+.env.production
+
+# Database
+chroma_db/
+user_data.json
+
+# Temporary files
+temp_*
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Uploaded files
+backend/static/logos/*.png
+backend/static/logos/*.jpg
+backend/static/logos/*.jpeg
+
+# Test files
+test.html
+docmind_info.md
+create_png.py
