@@ -13,6 +13,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 5. 复制所有应用代码到容器
 COPY . .
 
-# 6. 定义容器启动命令：使用 uvicorn 运行 main.py 中的 app 实例
-# 使用 $PORT 环境变量（Railway 会自动注入），默认 8080
-CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080}
+# 6. 给启动脚本执行权限
+RUN chmod +x start.sh
+
+# 7. 使用启动脚本来正确处理 PORT 环境变量
+CMD ["./start.sh"]
