@@ -6,7 +6,7 @@ export default function LandingPage({ onLoginClick }) {
     useEffect(() => {
         // Create script element
         const script = document.createElement('script');
-        script.src = 'http://localhost:5173/loader.js';
+        script.src = 'https://docmind-frontend-app.vercel.app/loader.js';
         script.setAttribute('data-owner-id', 'user_35jBoKJruGS7H9k2fMGLY54Dwrp');
         script.async = true;
 

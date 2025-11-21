@@ -268,13 +268,13 @@ const WidgetGenerator = () => {
                         <div className="relative">
                             <pre className="bg-slate-900 text-slate-50 p-4 rounded-xl overflow-x-auto text-xs font-mono">
                                 <code>{`<script 
-  src="http://localhost:5173/loader.js" 
+  src="https://docmind-frontend-app.vercel.app/loader.js" 
   data-owner-id="${user.id}"
 ></script>`}</code>
                             </pre>
                             <button
                                 onClick={() => {
-                                    const code = `<script src="http://localhost:5173/loader.js" data-owner-id="${user.id}"></script>`;
+                                    const code = `<script src="https://docmind-frontend-app.vercel.app/loader.js" data-owner-id="${user.id}"></script>`;
                                     navigator.clipboard.writeText(code);
                                     alert('✅ Script code copied!');
                                 }}
@@ -367,7 +367,7 @@ const WidgetGenerator = () => {
                             </div>
                             <div>
                                 <p className="text-xs font-medium text-slate-500 mb-1">Widget URL</p>
-                                <p className="font-mono text-slate-900 text-xs">http://localhost:5173/widget</p>
+                                <p className="font-mono text-slate-900 text-xs">https://docmind-frontend-app.vercel.app/widget</p>
                             </div>
                             <div>
                                 <p className="text-xs font-medium text-slate-500 mb-1">Embed URL</p>
