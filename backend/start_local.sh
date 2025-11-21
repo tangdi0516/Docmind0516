@@ -12,4 +12,5 @@ pip install -r requirements.txt
 
 echo "🚀 启动服务器 (按 Ctrl+C 停止)..."
 export PORT=8080
+export DATA_DIR="."
 uvicorn main:app --host 0.0.0.0 --port $PORT --reload

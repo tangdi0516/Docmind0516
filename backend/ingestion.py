@@ -9,8 +9,11 @@ from typing import List
 # Initialize embeddings
 embeddings = OpenAIEmbeddings()
 
-# Initialize vector store
-persist_directory = "./chroma_db"
+# Use persistent data directory for Railway Volumes
+# Falls back to current directory for local development
+DATA_DIR = os.getenv("DATA_DIR", "/app/data")
+os.makedirs(DATA_DIR, exist_ok=True)
+persist_directory = os.path.join(DATA_DIR, "chroma_db")
 
 def get_vectorstore():
     return Chroma(
