@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Send, Bot, X, Minimize2, Zap, ChevronLeft, Sparkles, ThumbsUp, ThumbsDown, Copy, Info, ExternalLink } from 'lucide-react';
+import { Send, Bot, X, Minimize2, Zap, ChevronLeft, Sparkles, ThumbsUp, ThumbsDown, Copy, Info, ExternalLink, MessageSquare } from 'lucide-react';
 
 const WidgetChat = () => {
     const [messages, setMessages] = useState([]);
@@ -148,22 +148,16 @@ const WidgetChat = () => {
                             <img src={settings.header_logo} alt="Logo" className="w-full h-full object-cover" />
                         </div>
                     ) : (
-                        <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center">
-                            <Bot className="w-5 h-5 text-white" />
+                        <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center shadow-sm shadow-indigo-200">
+                            <MessageSquare className="w-4 h-4 text-white" />
                         </div>
                     )}
 
                     <div>
-                        <h2 className="font-bold text-base text-slate-900 leading-tight">{settings.bot_name || 'Assistant'}</h2>
+                        <h2 className="font-bold text-base text-slate-900 leading-tight">{settings.bot_name || 'DocMind AI'}</h2>
                     </div>
                 </div>
                 <div className="flex items-center gap-1 text-slate-400">
-                    <button className="p-1.5 hover:bg-slate-100 rounded-full transition-colors hover:text-slate-600">
-                        <Info className="w-4 h-4" />
-                    </button>
-                    <button className="p-1.5 hover:bg-slate-100 rounded-full transition-colors hover:text-slate-600">
-                        <ExternalLink className="w-4 h-4" />
-                    </button>
                     <button
                         onClick={handleClose}
                         className="p-1.5 hover:bg-slate-100 rounded-full transition-colors hover:text-slate-600"
