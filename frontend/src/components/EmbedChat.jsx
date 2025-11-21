@@ -97,68 +97,77 @@ const EmbedChat = () => {
     }
 
     return (
-        <div className="flex flex-col h-screen bg-white font-sans">
+        <div className="flex flex-col h-screen bg-white font-sans text-slate-900">
             {/* Header */}
             <div
-                className="flex items-center gap-3 px-4 py-3 border-b border-slate-100 shadow-sm sticky top-0 z-10 transition-colors"
-                style={{ backgroundColor: settings.widget_color }}
+                className="flex items-center gap-3 px-4 py-3 border-b border-white/10 shadow-sm sticky top-0 z-10 transition-colors"
+                style={{ backgroundColor: settings.widget_color, color: '#fff' }}
             >
                 {settings.header_logo ? (
-                    <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center overflow-hidden">
+                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center overflow-hidden border border-white/10">
                         <img src={settings.header_logo} alt="Logo" className="w-full h-full object-cover" />
                     </div>
                 ) : (
-                    <div className="p-2 bg-white/20 rounded-lg">
+                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shadow-sm border border-white/10">
                         <Bot className="w-5 h-5 text-white" />
                     </div>
                 )}
 
                 <div>
-                    <h1 className="font-bold text-white text-sm">{botName}</h1>
+                    <h1 className="font-bold text-white text-base leading-tight">{botName}</h1>
                     <div className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
-                        <span className="text-xs text-white/80 font-medium">Online</span>
+                        <span className="w-1.5 h-1.5 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.6)]"></span>
+                        <span className="text-xs text-white/90 font-medium">Online</span>
                     </div>
                 </div>
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-slate-50/50">
+            <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-white">
                 {messages.map((msg, index) => (
                     <div
                         key={index}
-                        className={`flex items-start gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
+                        className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
                     >
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-slate-200' : 'bg-indigo-50'
-                            }`}
-                            style={msg.role !== 'user' ? { backgroundColor: `${settings.widget_color}20` } : {}}
-                        >
-                            {msg.role === 'user' ?
-                                <User className="w-5 h-5 text-slate-600" /> :
-                                <Bot className="w-5 h-5" style={{ color: settings.widget_color }} />
-                            }
-                        </div>
+                        {msg.role === 'assistant' && (
+                            <span className="text-xs text-slate-400 mb-1 ml-10">{botName}</span>
+                        )}
 
-                        <div className={`group relative max-w-[85%] px-4 py-3 rounded-2xl shadow-sm text-sm leading-relaxed ${msg.role === 'user'
-                            ? 'text-white rounded-tr-sm'
-                            : 'bg-white text-slate-700 border border-slate-100 rounded-tl-sm'
-                            }`}
-                            style={msg.role === 'user' ? { backgroundColor: settings.widget_color } : {}}
-                        >
-                            {msg.content}
+                        <div className={`flex gap-2 max-w-[90%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                            {/* Avatar/Icon */}
+                            {msg.role === 'assistant' && (
+                                <div className="w-8 h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 mt-1">
+                                    <Bot className="w-4 h-4 text-slate-600" />
+                                </div>
+                            )}
+
+                            {/* Bubble */}
+                            <div
+                                className={`px-4 py-3 text-[15px] leading-relaxed shadow-sm ${msg.role === 'user'
+                                        ? 'text-white rounded-2xl rounded-tr-sm'
+                                        : 'bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tl-sm'
+                                    }`}
+                                style={msg.role === 'user' ? { backgroundColor: settings.widget_color } : {}}
+                            >
+                                <p className="whitespace-pre-wrap">{msg.content}</p>
+                            </div>
                         </div>
                     </div>
                 ))}
+
                 {loading && (
-                    <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                            <Loader2 className="w-4 h-4 text-indigo-600 animate-spin" />
-                        </div>
-                        <div className="bg-white px-4 py-3 rounded-2xl rounded-tl-sm border border-slate-100 shadow-sm">
-                            <div className="flex gap-1">
-                                <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></span>
-                                <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                                <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                    <div className="flex flex-col items-start animate-in fade-in slide-in-from-bottom-2 duration-300">
+                        <span className="text-xs text-slate-400 mb-1 ml-10">{botName}</span>
+                        <div className="flex gap-2 max-w-[90%]">
+                            <div className="w-8 h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 mt-1">
+                                <Bot className="w-4 h-4 text-slate-600" />
+                            </div>
+                            <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
+                                <div className="flex gap-1.5">
+                                    <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                                    <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                                    <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -175,20 +184,19 @@ const EmbedChat = () => {
                         onChange={(e) => setInput(e.target.value)}
                         onKeyPress={handleKeyPress}
                         placeholder="Type your message..."
-                        className="w-full pl-4 pr-12 py-3 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm"
+                        className="w-full py-3 pl-4 pr-12 bg-slate-100 border-none rounded-full focus:ring-2 focus:ring-slate-200 text-slate-800 placeholder:text-slate-400 text-[15px]"
                         disabled={loading}
                     />
                     <button
                         onClick={handleSend}
                         disabled={!input.trim() || loading}
-                        className="absolute right-2 p-2 text-white rounded-lg disabled:opacity-50 transition-all shadow-sm"
-                        style={{ backgroundColor: settings.widget_color }}
+                        className="absolute right-2 p-2 text-slate-400 hover:text-indigo-600 disabled:opacity-50 disabled:hover:text-slate-400 transition-colors"
                     >
-                        <Send className="w-4 h-4" />
+                        <Send className="w-5 h-5" />
                     </button>
                 </div>
                 <div className="text-center mt-2">
-                    <a href="#" className="text-[10px] text-slate-400 hover:text-indigo-500 font-medium transition-colors">
+                    <a href="https://docmind.com" target="_blank" rel="noopener noreferrer" className="text-[10px] font-medium text-slate-300 hover:text-slate-500 transition-colors flex items-center justify-center gap-1">
                         Powered by DocMind
                     </a>
                 </div>

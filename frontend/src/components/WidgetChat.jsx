@@ -133,34 +133,40 @@ const WidgetChat = () => {
 
     return (
         <div className="flex flex-col h-screen bg-white relative overflow-hidden font-sans text-slate-900">
-            {/* Header - Clean White */}
-            <div className="absolute top-0 left-0 right-0 z-20 px-4 py-3 flex items-center justify-between bg-white/90 backdrop-blur-md border-b border-slate-100">
+            {/* Header - Custom Color */}
+            <div
+                className="absolute top-0 left-0 right-0 z-20 px-4 py-3 flex items-center justify-between backdrop-blur-md border-b border-white/10 shadow-sm transition-all duration-300"
+                style={{
+                    backgroundColor: headerColor,
+                    color: '#fff'
+                }}
+            >
                 <div className="flex items-center gap-3">
                     <button
                         onClick={handleClose}
-                        className="p-1.5 hover:bg-slate-100 rounded-full transition-colors text-slate-600"
+                        className="p-1.5 hover:bg-white/20 rounded-full transition-colors text-white/90"
                     >
                         <ChevronLeft className="w-5 h-5" />
                     </button>
 
                     {settings.header_logo ? (
-                        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200">
+                        <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center overflow-hidden border border-white/10">
                             <img src={settings.header_logo} alt="Logo" className="w-full h-full object-cover" />
                         </div>
                     ) : (
-                        <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center shadow-sm shadow-indigo-200">
+                        <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shadow-sm border border-white/10">
                             <MessageSquare className="w-4 h-4 text-white" />
                         </div>
                     )}
 
                     <div>
-                        <h2 className="font-bold text-base text-slate-900 leading-tight">{settings.bot_name || 'DocMind AI'}</h2>
+                        <h2 className="font-bold text-base text-white leading-tight">{settings.bot_name || 'DocMind AI'}</h2>
                     </div>
                 </div>
-                <div className="flex items-center gap-1 text-slate-400">
+                <div className="flex items-center gap-1 text-white/90">
                     <button
                         onClick={handleClose}
-                        className="p-1.5 hover:bg-slate-100 rounded-full transition-colors hover:text-slate-600"
+                        className="p-1.5 hover:bg-white/20 rounded-full transition-colors text-white"
                     >
                         <X className="w-5 h-5" />
                     </button>
@@ -177,7 +183,7 @@ const WidgetChat = () => {
                                 className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
                             >
                                 {msg.role === 'assistant' && (
-                                    <span className="text-xs text-slate-400 mb-1 ml-10">{settings.bot_name || 'Assistant'}</span>
+                                    <span className="text-xs text-slate-400 mb-1 ml-10">{settings.bot_name || 'DocMind AI'}</span>
                                 )}
 
                                 <div className={`flex gap-2 max-w-[90%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
@@ -192,9 +198,10 @@ const WidgetChat = () => {
                                     <div className="flex flex-col gap-1">
                                         <div
                                             className={`px-4 py-3 text-[15px] leading-relaxed shadow-sm ${msg.role === 'user'
-                                                ? 'bg-slate-900 text-white rounded-2xl rounded-tr-sm'
-                                                : 'bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tl-sm'
+                                                    ? 'text-white rounded-2xl rounded-tr-sm'
+                                                    : 'bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tl-sm'
                                                 }`}
+                                            style={msg.role === 'user' ? { backgroundColor: headerColor } : {}}
                                         >
                                             <p className="whitespace-pre-wrap">{msg.content}</p>
                                         </div>
