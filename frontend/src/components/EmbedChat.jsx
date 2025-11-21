@@ -130,22 +130,15 @@ const EmbedChat = () => {
                         className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
                     >
                         {msg.role === 'assistant' && (
-                            <span className="text-xs text-slate-400 mb-1 ml-10">{botName}</span>
+                            <span className="text-xs text-slate-400 mb-1">{botName}</span>
                         )}
 
                         <div className={`flex gap-2 max-w-[90%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                            {/* Avatar/Icon */}
-                            {msg.role === 'assistant' && (
-                                <div className="w-8 h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 mt-1">
-                                    <Bot className="w-4 h-4 text-slate-600" />
-                                </div>
-                            )}
-
                             {/* Bubble */}
                             <div
                                 className={`px-4 py-3 text-[15px] leading-relaxed shadow-sm ${msg.role === 'user'
-                                        ? 'text-white rounded-2xl rounded-tr-sm'
-                                        : 'bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tl-sm'
+                                    ? 'text-white rounded-2xl rounded-tr-sm'
+                                    : 'bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tl-sm'
                                     }`}
                                 style={msg.role === 'user' ? { backgroundColor: settings.widget_color } : {}}
                             >
@@ -157,11 +150,8 @@ const EmbedChat = () => {
 
                 {loading && (
                     <div className="flex flex-col items-start animate-in fade-in slide-in-from-bottom-2 duration-300">
-                        <span className="text-xs text-slate-400 mb-1 ml-10">{botName}</span>
+                        <span className="text-xs text-slate-400 mb-1">{botName}</span>
                         <div className="flex gap-2 max-w-[90%]">
-                            <div className="w-8 h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 mt-1">
-                                <Bot className="w-4 h-4 text-slate-600" />
-                            </div>
                             <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
                                 <div className="flex gap-1.5">
                                     <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>

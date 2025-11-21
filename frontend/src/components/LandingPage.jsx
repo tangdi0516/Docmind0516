@@ -153,33 +153,21 @@ export default function LandingPage({ onLoginClick }) {
                                 </div>
                                 <div className="p-6 space-y-6 bg-slate-50/50 h-[400px] flex flex-col">
                                     <div className="flex gap-4">
-                                        <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
-                                            <span className="text-xs font-bold text-indigo-600">U</span>
-                                        </div>
                                         <div className="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm border border-slate-100 text-sm text-slate-700">
                                             Do you offer a free trial for the Pro plan?
                                         </div>
                                     </div>
                                     <div className="flex gap-4 flex-row-reverse">
-                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/30">
-                                            <BotIcon />
-                                        </div>
                                         <div className="bg-indigo-600 p-4 rounded-2xl rounded-tr-none shadow-md text-sm text-white">
                                             Yes! We offer a 14-day free trial for all our paid plans. You can cancel anytime during the trial period without being charged.
                                         </div>
                                     </div>
                                     <div className="flex gap-4">
-                                        <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
-                                            <span className="text-xs font-bold text-indigo-600">U</span>
-                                        </div>
                                         <div className="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm border border-slate-100 text-sm text-slate-700">
                                             How do I integrate this into my React app?
                                         </div>
                                     </div>
                                     <div className="flex gap-4 flex-row-reverse">
-                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/30">
-                                            <BotIcon />
-                                        </div>
                                         <div className="bg-indigo-600 p-4 rounded-2xl rounded-tr-none shadow-md text-sm text-white">
                                             It's very simple. Just add our script tag to your index.html or use our React component wrapper. Check out the Integration section below for the code!
                                         </div>

@@ -142,13 +142,6 @@ const WidgetChat = () => {
                 }}
             >
                 <div className="flex items-center gap-3">
-                    <button
-                        onClick={handleClose}
-                        className="p-1.5 hover:bg-white/20 rounded-full transition-colors text-white/90"
-                    >
-                        <ChevronLeft className="w-5 h-5" />
-                    </button>
-
                     {settings.header_logo ? (
                         <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center overflow-hidden border border-white/10">
                             <img src={settings.header_logo} alt="Logo" className="w-full h-full object-cover" />
@@ -183,23 +176,16 @@ const WidgetChat = () => {
                                 className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
                             >
                                 {msg.role === 'assistant' && (
-                                    <span className="text-xs text-slate-400 mb-1 ml-10">{settings.bot_name || 'DocMind AI'}</span>
+                                    <span className="text-xs text-slate-400 mb-1">{settings.bot_name || 'DocMind AI'}</span>
                                 )}
 
                                 <div className={`flex gap-2 max-w-[90%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                                    {/* Avatar/Icon */}
-                                    {msg.role === 'assistant' && (
-                                        <div className="w-8 h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 mt-1">
-                                            <Sparkles className="w-4 h-4 text-slate-600" />
-                                        </div>
-                                    )}
-
                                     {/* Bubble */}
                                     <div className="flex flex-col gap-1">
                                         <div
                                             className={`px-4 py-3 text-[15px] leading-relaxed shadow-sm ${msg.role === 'user'
-                                                    ? 'text-white rounded-2xl rounded-tr-sm'
-                                                    : 'bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tl-sm'
+                                                ? 'text-white rounded-2xl rounded-tr-sm'
+                                                : 'bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tl-sm'
                                                 }`}
                                             style={msg.role === 'user' ? { backgroundColor: headerColor } : {}}
                                         >
@@ -220,7 +206,6 @@ const WidgetChat = () => {
                                                         <Copy className="w-3.5 h-3.5" />
                                                     </button>
                                                 </div>
-                                                <span className="text-[10px] text-slate-400">AI generated</span>
                                             </div>
                                         )}
                                     </div>
@@ -230,11 +215,8 @@ const WidgetChat = () => {
 
                         {loading && (
                             <div className="flex flex-col items-start animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                <span className="text-xs text-slate-400 mb-1 ml-10">{settings.bot_name || 'Assistant'}</span>
+                                <span className="text-xs text-slate-400 mb-1">{settings.bot_name || 'Assistant'}</span>
                                 <div className="flex gap-2 max-w-[90%]">
-                                    <div className="w-8 h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 mt-1">
-                                        <Sparkles className="w-4 h-4 text-slate-600" />
-                                    </div>
                                     <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
                                         <div className="flex gap-1.5">
                                             <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
