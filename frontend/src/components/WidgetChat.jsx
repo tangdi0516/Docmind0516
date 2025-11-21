@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Send, Bot, X, Minimize2, Zap } from 'lucide-react';
+import { Send, Bot, X, Minimize2, Zap, ChevronLeft, Sparkles, ThumbsUp, ThumbsDown, Copy, Info, ExternalLink } from 'lucide-react';
 
 const WidgetChat = () => {
     const [messages, setMessages] = useState([]);
@@ -132,51 +132,43 @@ const WidgetChat = () => {
     const headerColor = settings.widget_color || '#4F46E5';
 
     return (
-
-        <div className="flex flex-col h-screen bg-slate-50 relative overflow-hidden font-sans selection:bg-indigo-100 selection:text-indigo-900">
-            {/* Subtle Background Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-b from-indigo-50/50 to-white pointer-events-none" />
-
-            {/* Header - Glassmorphism */}
-            <div
-                className="absolute top-0 left-0 right-0 z-20 px-4 py-3 flex items-center justify-between backdrop-blur-md border-b border-white/10 shadow-sm transition-all duration-300"
-                style={{
-                    backgroundColor: `${headerColor}E6`, // 90% opacity for glass effect
-                    color: '#fff'
-                }}
-            >
+        <div className="flex flex-col h-screen bg-white relative overflow-hidden font-sans text-slate-900">
+            {/* Header - Clean White */}
+            <div className="absolute top-0 left-0 right-0 z-20 px-4 py-3 flex items-center justify-between bg-white/90 backdrop-blur-md border-b border-slate-100">
                 <div className="flex items-center gap-3">
+                    <button
+                        onClick={handleClose}
+                        className="p-1.5 hover:bg-slate-100 rounded-full transition-colors text-slate-600"
+                    >
+                        <ChevronLeft className="w-5 h-5" />
+                    </button>
+
                     {settings.header_logo ? (
-                        <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center overflow-hidden shadow-inner border border-white/10">
+                        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200">
                             <img src={settings.header_logo} alt="Logo" className="w-full h-full object-cover" />
                         </div>
                     ) : (
-                        <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl border border-white/10">
+                        <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center">
                             <Bot className="w-5 h-5 text-white" />
                         </div>
                     )}
+
                     <div>
-                        <h2 className="font-bold text-base tracking-tight">{settings.bot_name || 'Assistant'}</h2>
-                        <div className="flex items-center gap-1.5 opacity-90">
-                            <span className="w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.6)]"></span>
-                            <p className="text-xs font-medium">Online</p>
-                        </div>
+                        <h2 className="font-bold text-base text-slate-900 leading-tight">{settings.bot_name || 'Assistant'}</h2>
                     </div>
                 </div>
-                <div className="flex gap-1">
-                    <button
-                        onClick={handleMinimize}
-                        className="p-2 hover:bg-white/20 rounded-lg transition-colors active:scale-95"
-                        title="Minimize"
-                    >
-                        <Minimize2 className="w-4 h-4" />
+                <div className="flex items-center gap-1 text-slate-400">
+                    <button className="p-1.5 hover:bg-slate-100 rounded-full transition-colors hover:text-slate-600">
+                        <Info className="w-4 h-4" />
+                    </button>
+                    <button className="p-1.5 hover:bg-slate-100 rounded-full transition-colors hover:text-slate-600">
+                        <ExternalLink className="w-4 h-4" />
                     </button>
                     <button
                         onClick={handleClose}
-                        className="p-2 hover:bg-white/20 rounded-lg transition-colors active:scale-95"
-                        title="Close"
+                        className="p-1.5 hover:bg-slate-100 rounded-full transition-colors hover:text-slate-600"
                     >
-                        <X className="w-4 h-4" />
+                        <X className="w-5 h-5" />
                     </button>
                 </div>
             </div>
@@ -184,46 +176,70 @@ const WidgetChat = () => {
             {/* Messages Area */}
             {!isMinimized && (
                 <>
-                    <div className="flex-1 overflow-y-auto p-4 pt-20 pb-24 space-y-6 scroll-smooth">
+                    <div className="flex-1 overflow-y-auto p-4 pt-20 pb-24 space-y-6 bg-white">
                         {messages.map((msg, idx) => (
                             <div
                                 key={idx}
-                                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
+                                className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
                             >
                                 {msg.role === 'assistant' && (
-                                    <div className="w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center shadow-sm mr-2 shrink-0 mt-1">
-                                        {settings.header_logo ? (
-                                            <img src={settings.header_logo} alt="Bot" className="w-full h-full rounded-full object-cover" />
-                                        ) : (
-                                            <Bot className="w-4 h-4 text-indigo-600" />
+                                    <span className="text-xs text-slate-400 mb-1 ml-10">{settings.bot_name || 'Assistant'}</span>
+                                )}
+
+                                <div className={`flex gap-2 max-w-[90%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                                    {/* Avatar/Icon */}
+                                    {msg.role === 'assistant' && (
+                                        <div className="w-8 h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 mt-1">
+                                            <Sparkles className="w-4 h-4 text-slate-600" />
+                                        </div>
+                                    )}
+
+                                    {/* Bubble */}
+                                    <div className="flex flex-col gap-1">
+                                        <div
+                                            className={`px-4 py-3 text-[15px] leading-relaxed shadow-sm ${msg.role === 'user'
+                                                ? 'bg-slate-900 text-white rounded-2xl rounded-tr-sm'
+                                                : 'bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tl-sm'
+                                                }`}
+                                        >
+                                            <p className="whitespace-pre-wrap">{msg.content}</p>
+                                        </div>
+
+                                        {/* Bot Actions */}
+                                        {msg.role === 'assistant' && (
+                                            <div className="flex items-center justify-between px-1 mt-1">
+                                                <div className="flex gap-2">
+                                                    <button className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors">
+                                                        <ThumbsUp className="w-3.5 h-3.5" />
+                                                    </button>
+                                                    <button className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors">
+                                                        <ThumbsDown className="w-3.5 h-3.5" />
+                                                    </button>
+                                                    <button className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors">
+                                                        <Copy className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
+                                                <span className="text-[10px] text-slate-400">AI generated</span>
+                                            </div>
                                         )}
                                     </div>
-                                )}
-                                <div
-                                    className={`max-w-[85%] rounded-2xl px-5 py-3.5 shadow-sm text-[15px] leading-relaxed ${msg.role === 'user'
-                                        ? 'text-white rounded-tr-sm'
-                                        : 'bg-white border border-slate-100 text-slate-700 rounded-tl-sm shadow-slate-200/50'
-                                        }`}
-                                    style={msg.role === 'user' ? { backgroundColor: headerColor } : {}}
-                                >
-                                    <p className="whitespace-pre-wrap">{msg.content}</p>
                                 </div>
                             </div>
                         ))}
+
                         {loading && (
-                            <div className="flex justify-start animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                <div className="w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center shadow-sm mr-2 shrink-0 mt-1">
-                                    {settings.header_logo ? (
-                                        <img src={settings.header_logo} alt="Bot" className="w-full h-full rounded-full object-cover" />
-                                    ) : (
-                                        <Bot className="w-4 h-4 text-indigo-600" />
-                                    )}
-                                </div>
-                                <div className="bg-white border border-slate-100 rounded-2xl rounded-tl-sm px-5 py-4 shadow-sm shadow-slate-200/50">
-                                    <div className="flex gap-1.5">
-                                        <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                                        <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                                        <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                            <div className="flex flex-col items-start animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                <span className="text-xs text-slate-400 mb-1 ml-10">{settings.bot_name || 'Assistant'}</span>
+                                <div className="flex gap-2 max-w-[90%]">
+                                    <div className="w-8 h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 mt-1">
+                                        <Sparkles className="w-4 h-4 text-slate-600" />
+                                    </div>
+                                    <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
+                                        <div className="flex gap-1.5">
+                                            <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                                            <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                                            <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -231,15 +247,15 @@ const WidgetChat = () => {
                         <div ref={messagesEndRef} />
                     </div>
 
-                    {/* Floating Input Area */}
-                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-slate-50 via-slate-50 to-transparent z-10">
-                        <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-2xl shadow-lg shadow-slate-200/50 p-2 flex items-end gap-2 ring-1 ring-slate-900/5">
+                    {/* Input Area */}
+                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-100">
+                        <div className="relative flex items-center">
                             <textarea
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyPress={handleKeyPress}
-                                placeholder="Type a message..."
-                                className="flex-1 max-h-32 min-h-[44px] py-2.5 px-3 bg-transparent border-none focus:ring-0 text-slate-800 placeholder:text-slate-400 resize-none text-[15px]"
+                                placeholder="Type your message here..."
+                                className="w-full py-3 pl-4 pr-12 bg-slate-100 border-none rounded-full focus:ring-2 focus:ring-slate-200 text-slate-800 placeholder:text-slate-400 resize-none text-[15px] max-h-32 min-h-[48px]"
                                 rows={1}
                                 disabled={loading}
                                 style={{ height: 'auto' }}
@@ -251,14 +267,13 @@ const WidgetChat = () => {
                             <button
                                 onClick={handleSend}
                                 disabled={loading || !input.trim()}
-                                className="p-2.5 rounded-xl text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md active:scale-95 shrink-0 mb-0.5"
-                                style={{ backgroundColor: headerColor }}
+                                className="absolute right-2 p-2 text-slate-400 hover:text-indigo-600 disabled:opacity-50 disabled:hover:text-slate-400 transition-colors"
                             >
                                 <Send className="w-5 h-5" />
                             </button>
                         </div>
                         <div className="text-center mt-2">
-                            <a href="https://docmind.com" target="_blank" rel="noopener noreferrer" className="text-[10px] font-medium text-slate-400 hover:text-indigo-500 transition-colors flex items-center justify-center gap-1">
+                            <a href="https://docmind.com" target="_blank" rel="noopener noreferrer" className="text-[10px] font-medium text-slate-300 hover:text-slate-500 transition-colors flex items-center justify-center gap-1">
                                 <Zap className="w-3 h-3" /> Powered by DocMind
                             </a>
                         </div>
