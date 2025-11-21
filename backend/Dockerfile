@@ -14,5 +14,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # 6. 定义容器启动命令：使用 uvicorn 运行 main.py 中的 app 实例
-# 容器必须监听 0.0.0.0 和 Cloud Run 默认的 8080 端口
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+# 使用 $PORT 环境变量（Railway 会自动注入），默认 8080
+CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080}
