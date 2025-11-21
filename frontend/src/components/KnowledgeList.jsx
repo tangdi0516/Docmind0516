@@ -10,7 +10,7 @@ const KnowledgeList = ({ refreshTrigger, filterType = 'file' }) => {
     const [deleting, setDeleting] = useState(null);
 
     // [Temporary] Switch to localhost to show new features
-    const API_BASE_URL = 'http://localhost:8000';
+    const API_BASE_URL = 'https://docmind0516-production.up.railway.app';
 
     const fetchDocuments = async () => {
         if (!user) return;

@@ -20,3 +20,4 @@ user_data.json
 static/logos/*.png
 static/logos/*.jpg
 static/logos/*.jpeg
+.vercel

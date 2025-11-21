@@ -21,7 +21,7 @@ const Dashboard = () => {
     const [docCount, setDocCount] = useState(0);
 
     // [Temporary] Switch to localhost to show new features
-    const API_BASE_URL = 'http://localhost:8000';
+    const API_BASE_URL = 'https://docmind0516-production.up.railway.app';
 
     const fetchData = async () => {
         if (!user) return;

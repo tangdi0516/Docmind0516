@@ -15,7 +15,7 @@ const Chat = () => {
     const messagesEndRef = useRef(null);
 
     // [Temporary] Switch to localhost to fix chat error
-    const API_BASE_URL = 'http://localhost:8000';
+    const API_BASE_URL = 'https://docmind0516-production.up.railway.app';
 
     useEffect(() => {
         // Fetch bot settings

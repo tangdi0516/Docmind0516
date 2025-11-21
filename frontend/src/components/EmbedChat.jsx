@@ -16,7 +16,7 @@ const EmbedChat = () => {
     const [userId, setUserId] = useState(null);
 
     // [Temporary] Switch to localhost
-    const API_BASE_URL = 'http://localhost:8000';
+    const API_BASE_URL = 'https://docmind0516-production.up.railway.app';
 
     useEffect(() => {
         // Extract user_id from URL path: /embed/<user_id>

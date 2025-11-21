@@ -15,7 +15,7 @@ const WidgetGenerator = () => {
     const [saving, setSaving] = useState(false);
 
     // [Temporary] Switch to localhost
-    const API_BASE_URL = 'http://localhost:8000';
+    const API_BASE_URL = 'https://docmind0516-production.up.railway.app';
 
     // Construct the embed URL based on current location
     const baseUrl = window.location.origin;

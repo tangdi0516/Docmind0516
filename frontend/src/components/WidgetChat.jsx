@@ -14,7 +14,7 @@ const WidgetChat = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const ownerId = urlParams.get('ownerId');
 
-    const API_BASE_URL = 'http://localhost:8000';
+    const API_BASE_URL = 'https://docmind0516-production.up.railway.app';
 
     useEffect(() => {
         if (!ownerId) {

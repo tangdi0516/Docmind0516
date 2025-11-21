@@ -15,7 +15,7 @@ const Upload = () => {
     const [refreshTrigger, setRefreshTrigger] = useState(0);
 
     // [Temporary] Switch to localhost to show new features
-    const API_BASE_URL = 'http://localhost:8000';
+    const API_BASE_URL = 'https://docmind0516-production.up.railway.app';
 
     const handleFileChange = (e) => {
         if (e.target.files && e.target.files[0]) {
