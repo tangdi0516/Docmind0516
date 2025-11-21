@@ -30,6 +30,15 @@ class ChatRequest(BaseModel):
 def read_root():
     return {"message": "DocsBot Backend is running"}
 
+@app.get("/debug/version")
+def debug_version():
+    import langchain
+    import pkg_resources
+    return {
+        "langchain_version": langchain.__version__,
+        "installed_packages": [f"{p.project_name}=={p.version}" for p in pkg_resources.working_set if "langchain" in p.project_name]
+    }
+
 @app.post("/upload")
 async def upload_document(request: Request, file: UploadFile = File(...)):
     try:
