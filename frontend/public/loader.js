@@ -99,6 +99,11 @@
         if (event.data && event.data.type === 'CLOSE_WIDGET') {
             closeChat();
         }
+        if (event.data && event.data.type === 'UPDATE_WIDGET_COLOR') {
+            if (bubble) {
+                bubble.style.backgroundColor = event.data.color;
+            }
+        }
     }
 
     // Toggle chat window

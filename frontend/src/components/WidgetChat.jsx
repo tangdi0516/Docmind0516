@@ -79,6 +79,16 @@ const WidgetChat = () => {
         fetchSettings();
     }, [ownerId]);
 
+    // Notify parent window (loader.js) about the widget color
+    useEffect(() => {
+        if (settings?.widget_color) {
+            window.parent.postMessage({
+                type: 'UPDATE_WIDGET_COLOR',
+                color: settings.widget_color
+            }, '*');
+        }
+    }, [settings]);
+
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
