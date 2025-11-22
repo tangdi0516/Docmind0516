@@ -38,9 +38,13 @@ async def crawl_website(base_url: str, max_pages=500, max_time=120):
     try:
         parsed = urlparse(base_url)
         base_domain = parsed.netloc
+        
+        # Normalize domain: remove www. prefix for matching purposes
+        normalized_domain = base_domain.replace('www.', '') if base_domain.startswith('www.') else base_domain
+        
         discovered_urls: Set[str] = set()
         
-        debug_logs.append(f"Starting scan for {base_domain}")
+        debug_logs.append(f"Starting scan for {base_domain} (normalized: {normalized_domain})")
 
         # --- Phase 1: Sitemap Discovery ---
         sitemap_urls = set()
@@ -65,7 +69,7 @@ async def crawl_website(base_url: str, max_pages=500, max_time=120):
                         # Extract URLs (simple regex is faster and more robust for XML variations)
                         urls = re.findall(r'<loc>(https?://[^<]+)</loc>', resp.text)
                         for url in urls:
-                            if base_domain in url:
+                            if normalized_domain in url or base_domain in url:
                                 discovered_urls.add(url.strip())
                 except Exception:
                     continue
@@ -166,7 +170,7 @@ async def crawl_website(base_url: str, max_pages=500, max_time=120):
                             for a in soup.find_all('a', href=True):
                                 link = urljoin(url, a['href'])
                                 parsed = urlparse(link)
-                                if parsed.netloc == base_domain:
+                                if parsed.netloc.replace('www.', '') == normalized_domain:
                                     clean = link.split('#')[0]
                                     if clean not in visited and clean not in discovered_urls and clean not in to_visit:
                                         to_visit.append(clean)
