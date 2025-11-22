@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocMind Widget Test - Third Party Website</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #1e293b;
+            margin-bottom: 16px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 32px;
+            font-size: 18px;
+        }
+
+        .content {
+            line-height: 1.8;
+            color: #334155;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="badge">🧪 Widget Embed Test</div>
+        <h1>Welcome to Our Demo Website</h1>
+        <p class="subtitle">This is a test page to verify DocMind chat widget embedding</p>
+
+        <div class="content">
+            <h2>About This Test</h2>
+            <p>This page simulates a third-party website with the DocMind chat widget embedded. The chat bubble should
+                appear in the bottom-right corner.</p>
+
+            <h3>What to Test:</h3>
+            <ul>
+                <li>✅ Chat bubble appears in bottom-right corner</li>
+                <li>✅ Click bubble to open chat window</li>
+                <li>✅ Send a test message</li>
+                <li>✅ Verify custom colors and branding</li>
+                <li>✅ Check that text color adjusts based on background</li>
+            </ul>
+
+            <h3>Sample Content</h3>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et
+                dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.</p>
+
+            <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+                Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
+                laborum.</p>
+
+            <blockquote
+                style="border-left: 4px solid #4F46E5; padding-left: 20px; color: #64748b; font-style: italic; margin: 24px 0;">
+                "The chat widget should load without interfering with the existing page content."
+            </blockquote>
+        </div>
+    </div>
+
+    <!-- DocMind Chat Widget -->
+    <script src="https://docmind-frontend-app.vercel.app/loader.js" data-owner-id="user_35jBoKJruG57H9k2fMGLY54DwrP">
+    </script>
+</body>
+
+</html>

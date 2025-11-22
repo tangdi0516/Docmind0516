@@ -25,6 +25,7 @@ const WidgetChat = () => {
     const [loading, setLoading] = useState(false);
     const [settings, setSettings] = useState(null);
     const [isMinimized, setIsMinimized] = useState(false);
+    const [sessionId, setSessionId] = useState('');
     const messagesEndRef = useRef(null);
 
     // Get owner ID from URL parameters
@@ -32,6 +33,11 @@ const WidgetChat = () => {
     const ownerId = urlParams.get('ownerId');
 
     const API_BASE_URL = 'https://docmind0516-production.up.railway.app';
+
+    useEffect(() => {
+        // Generate a session ID when the component mounts
+        setSessionId(crypto.randomUUID());
+    }, []);
 
     useEffect(() => {
         if (!ownerId) {
@@ -92,7 +98,7 @@ const WidgetChat = () => {
         try {
             const response = await axios.post(
                 `${API_BASE_URL}/chat`,
-                { question: userMessage },
+                { question: userMessage, session_id: sessionId },
                 { headers: { 'user-id': ownerId } }
             );
 

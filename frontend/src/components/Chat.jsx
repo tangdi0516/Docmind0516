@@ -12,10 +12,16 @@ const Chat = () => {
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [botName, setBotName] = useState('DocMind');
+    const [sessionId, setSessionId] = useState('');
     const messagesEndRef = useRef(null);
 
     // [Temporary] Switch to localhost to fix chat error
     const API_BASE_URL = 'https://docmind0516-production.up.railway.app';
+
+    useEffect(() => {
+        // Generate a session ID when the component mounts
+        setSessionId(crypto.randomUUID());
+    }, []);
 
     useEffect(() => {
         // Fetch bot settings
@@ -67,7 +73,7 @@ const Chat = () => {
         try {
             // 4. 发送请求时带上 user-id header
             const response = await axios.post(`${API_BASE_URL}/chat`,
-                { question: userMessage.content },
+                { question: userMessage.content, session_id: sessionId },
                 {
                     headers: {
                         'Content-Type': 'application/json',

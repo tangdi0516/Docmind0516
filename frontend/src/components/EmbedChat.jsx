@@ -29,11 +29,16 @@ const EmbedChat = () => {
         header_logo: '',
         initial_message: 'Hello! How can I help you today?'
     });
+    const [sessionId, setSessionId] = useState('');
     const messagesEndRef = useRef(null);
     const [userId, setUserId] = useState(null);
 
     // [Temporary] Switch to localhost
     const API_BASE_URL = 'https://docmind0516-production.up.railway.app';
+
+    useEffect(() => {
+        setSessionId(crypto.randomUUID());
+    }, []);
 
     useEffect(() => {
         // Extract user_id from URL path: /embed/<user_id>
@@ -87,7 +92,8 @@ const EmbedChat = () => {
 
         try {
             const response = await axios.post(`${API_BASE_URL}/chat`, {
-                question: input
+                question: input,
+                session_id: sessionId
             }, {
                 headers: { 'user-id': userId }
             });

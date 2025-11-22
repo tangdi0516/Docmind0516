@@ -5,6 +5,8 @@ import Dashboard from './Dashboard';
 import Upload from './Upload';
 import Chat from './Chat';
 import WidgetGenerator from './WidgetGenerator';
+import LogsPage from './LogsPage';
+import TeamPage from './TeamPage';
 
 const DashboardLayout = ({ activeTab, setActiveTab }) => {
     return (
@@ -58,6 +60,24 @@ const DashboardLayout = ({ activeTab, setActiveTab }) => {
                             >
                                 Widget
                             </button>
+                            <button
+                                onClick={() => setActiveTab('logs')}
+                                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'logs'
+                                    ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5'
+                                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'
+                                    }`}
+                            >
+                                Logs
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('team')}
+                                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'team'
+                                    ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5'
+                                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'
+                                    }`}
+                            >
+                                Team
+                            </button>
                         </nav>
 
                         <div className="pl-2 border-l border-slate-200">
@@ -73,6 +93,8 @@ const DashboardLayout = ({ activeTab, setActiveTab }) => {
                     {activeTab === 'chat' && <Chat />}
                     {activeTab === 'upload' && <Upload />}
                     {activeTab === 'widget' && <WidgetGenerator />}
+                    {activeTab === 'logs' && <LogsPage />}
+                    {activeTab === 'team' && <TeamPage />}
                 </div>
             </main>
         </div>

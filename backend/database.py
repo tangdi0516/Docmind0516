@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import create_engine, Column, String, Integer, Text, JSON, text
+from sqlalchemy import create_engine, Column, String, Integer, Text, JSON, text, DateTime, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -98,6 +98,25 @@ class UserSettings(Base):
     widget_color = Column(String, default="#4F46E5")
     header_logo = Column(String, default="")
     initial_message = Column(String, default="Hello! How can I help you today?")
+
+class ChatLog(Base):
+    __tablename__ = "chat_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String, index=True) # The owner of the bot
+    session_id = Column(String, index=True) # To group messages
+    role = Column(String) # 'user' or 'assistant'
+    content = Column(Text)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class TeamMember(Base):
+    __tablename__ = "team_members"
+
+    id = Column(Integer, primary_key=True, index=True)
+    owner_id = Column(String, index=True) # Who invited them
+    email = Column(String)
+    role = Column(String, default="admin")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 def init_db():
     # Enable pgvector extension if not exists (Required for Supabase/Postgres vector search)

@@ -1,8 +1,11 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, Request
+from fastapi import FastAPI, UploadFile, File, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 import os
+import uuid
+from sqlalchemy.orm import Session
+from database import init_db, get_db, ChatLog, TeamMember
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -29,6 +32,7 @@ init_db()
 
 class ChatRequest(BaseModel):
     question: str
+    session_id: Optional[str] = None
 
 @app.get("/")
 def read_root():
@@ -83,7 +87,7 @@ async def ingest_url_endpoint(request: Request, url_request: URLRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/chat")
-async def chat(request: Request, chat_request: ChatRequest):
+async def chat(request: Request, chat_request: ChatRequest, db: Session = Depends(get_db)):
     try:
         user_id = request.headers.get("user-id")
         if not user_id:
@@ -92,10 +96,34 @@ async def chat(request: Request, chat_request: ChatRequest):
         from rag import query_rag
         from user_data_store import increment_message_count
         
+        # Use provided session_id or generate a new one (per request for now if not provided)
+        session_id = chat_request.session_id or str(uuid.uuid4())
+
+        # 1. Log User Message
+        user_msg = ChatLog(
+            user_id=user_id,
+            session_id=session_id,
+            role="user",
+            content=chat_request.question
+        )
+        db.add(user_msg)
+        db.commit()
+
+        # 2. Get Answer
         answer = query_rag(chat_request.question, user_id)
         increment_message_count(user_id)
         
-        return {"answer": answer}
+        # 3. Log Assistant Message
+        bot_msg = ChatLog(
+            user_id=user_id,
+            session_id=session_id,
+            role="assistant",
+            content=answer
+        )
+        db.add(bot_msg)
+        db.commit()
+        
+        return {"answer": answer, "session_id": session_id}
     except Exception as e:
         print(f"Error in chat endpoint: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -206,4 +234,83 @@ async def upload_logo(request: Request, file: UploadFile = File(...)):
         return {"url": logo_url}
     except Exception as e:
         print(f"Error in upload_logo: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --- New Endpoints for Logs and Team ---
+
+@app.get("/logs")
+async def get_chat_logs(request: Request, db: Session = Depends(get_db)):
+    try:
+        user_id = request.headers.get("user-id")
+        if not user_id:
+            raise HTTPException(status_code=400, detail="user-id header is required")
+        
+        # Get logs for this user, ordered by time desc
+        logs = db.query(ChatLog).filter(ChatLog.user_id == user_id).order_by(ChatLog.created_at.desc()).limit(100).all()
+        return logs
+    except Exception as e:
+        print(f"Error in get_chat_logs: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/team")
+async def get_team_members(request: Request, db: Session = Depends(get_db)):
+    try:
+        user_id = request.headers.get("user-id")
+        if not user_id:
+            raise HTTPException(status_code=400, detail="user-id header is required")
+            
+        members = db.query(TeamMember).filter(TeamMember.owner_id == user_id).all()
+        return members
+    except Exception as e:
+        print(f"Error in get_team_members: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+class InviteRequest(BaseModel):
+    email: str
+
+@app.post("/team/invite")
+async def invite_team_member(request: Request, invite: InviteRequest, db: Session = Depends(get_db)):
+    try:
+        user_id = request.headers.get("user-id")
+        if not user_id:
+            raise HTTPException(status_code=400, detail="user-id header is required")
+            
+        # Check if already exists
+        existing = db.query(TeamMember).filter(TeamMember.owner_id == user_id, TeamMember.email == invite.email).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="User already invited")
+            
+        new_member = TeamMember(
+            owner_id=user_id,
+            email=invite.email,
+            role="admin" # Default role
+        )
+        db.add(new_member)
+        db.commit()
+        db.refresh(new_member)
+        return new_member
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"Error in invite_team_member: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/team/{member_id}")
+async def remove_team_member(member_id: int, request: Request, db: Session = Depends(get_db)):
+    try:
+        user_id = request.headers.get("user-id")
+        if not user_id:
+            raise HTTPException(status_code=400, detail="user-id header is required")
+            
+        member = db.query(TeamMember).filter(TeamMember.id == member_id, TeamMember.owner_id == user_id).first()
+        if not member:
+            raise HTTPException(status_code=404, detail="Member not found")
+            
+        db.delete(member)
+        db.commit()
+        return {"status": "Member removed"}
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"Error in remove_team_member: {e}")
         raise HTTPException(status_code=500, detail=str(e))
