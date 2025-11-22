@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useUser } from "@clerk/clerk-react";
 import { Globe, Search, AlertCircle, Check, ChevronRight, ChevronDown, Folder, FileText, Loader2, Upload as UploadIcon, File, Link as LinkIcon } from 'lucide-react';
+import KnowledgeList from './KnowledgeList';
 
 // --- Recursive Tree Item Component ---
 const TreeItem = ({ node, selectedUrls, onToggle, level = 0 }) => {
@@ -123,6 +124,9 @@ const Upload = () => {
     const [selectedUrls, setSelectedUrls] = useState(new Set());
     const [totalFound, setTotalFound] = useState(0);
 
+    // Refresh trigger for KnowledgeList
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+
     const API_BASE_URL = 'https://docmind0516-production.up.railway.app';
 
     const handleFileChange = (e) => {
@@ -237,6 +241,8 @@ const Upload = () => {
                 setTotalFound(0);
                 setSelectedUrls(new Set());
                 setWebsiteStep(1);
+                // Trigger refresh of knowledge list
+                setRefreshTrigger(prev => prev + 1);
             }, 3000);
 
         } catch (error) {
@@ -247,7 +253,8 @@ const Upload = () => {
     };
 
     return (
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-5xl mx-auto space-y-6">
+            {/* Upload Interface */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                 {/* Tabs */}
                 <div className="flex border-b border-slate-100">
@@ -439,6 +446,14 @@ const Upload = () => {
                         </div>
                     )}
                 </div>
+            </div>
+
+            {/* Knowledge List - Shows uploaded sources */}
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <KnowledgeList
+                    refreshTrigger={refreshTrigger}
+                    filterType={activeTab === 'file' ? 'file' : 'url'}
+                />
             </div>
         </div>
     );
