@@ -135,7 +135,7 @@ async def crawl_website(base_url: str, max_pages=500, max_time=120):
                 visited = set()
                 to_visit = [base_url]
                 session = requests.Session()
-                session.headers.update({'User-Agent': random.choice(USER_AGENTS)}')
+                session.headers.update({'User-Agent': random.choice(USER_AGENTS)})
                 
                 while to_visit and len(discovered_urls) < max_pages:
                     if time.time() - start_time > max_time: 
