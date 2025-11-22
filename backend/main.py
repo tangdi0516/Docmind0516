@@ -291,15 +291,22 @@ async def upload_logo(request: Request, file: UploadFile = File(...)):
             file_options={"content-type": file.content_type}
         )
         
+        print(f"Upload response: {response}")
+        
         # Get public URL
         public_url = supabase.storage.from_('widget-assets').get_public_url(unique_filename)
         
+        print(f"Generated public URL: {public_url}")
+        
         return {"url": public_url}
         
+    except HTTPException as he:
+        raise he
     except Exception as e:
         print(f"Error in upload_logo: {e}")
         import traceback
         traceback.print_exc()
+        # Return more detailed error
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
 
