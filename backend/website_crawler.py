@@ -128,17 +128,19 @@ async def crawl_website(base_url: str, max_pages=500, max_time=120):
         #         # Fallback to Phase 3 will happen next
 
         # --- Phase 3: Requests BFS (Fallback) ---
-        # If we still have very few URLs (meaning Playwright failed or site is JS-heavy but Playwright crashed)
+        # Always use BFS if we found very few URLs from sitemap
         if len(discovered_urls) < 5:
-            debug_logs.append("Playwright failed or yielded low results. Falling back to Requests BFS...")
+            debug_logs.append(f"Starting Requests BFS fallback (currently have {len(discovered_urls)} URLs)...")
             try:
                 visited = set()
                 to_visit = [base_url]
                 session = requests.Session()
-                session.headers.update({'User-Agent': random.choice(USER_AGENTS)})
+                session.headers.update({'User-Agent': random.choice(USER_AGENTS)}')
                 
                 while to_visit and len(discovered_urls) < max_pages:
-                    if time.time() - start_time > max_time: break
+                    if time.time() - start_time > max_time: 
+                        debug_logs.append("BFS timed out")
+                        break
                     
                     url = to_visit.pop(0)
                     if url in visited: continue
@@ -146,9 +148,12 @@ async def crawl_website(base_url: str, max_pages=500, max_time=120):
                     
                     try:
                         resp = session.get(url, timeout=10)
+                        debug_logs.append(f"BFS: Fetched {url} - Status {resp.status_code}")
+                        
                         if resp.status_code == 200:
                             discovered_urls.add(url)
                             soup = BeautifulSoup(resp.text, 'html.parser')
+                            links_found = 0
                             for a in soup.find_all('a', href=True):
                                 link = urljoin(url, a['href'])
                                 parsed = urlparse(link)
@@ -156,11 +161,17 @@ async def crawl_website(base_url: str, max_pages=500, max_time=120):
                                     clean = link.split('#')[0]
                                     if clean not in visited and clean not in discovered_urls and clean not in to_visit:
                                         to_visit.append(clean)
-                    except Exception:
+                                        links_found += 1
+                            debug_logs.append(f"BFS: Found {links_found} new links on {url}")
+                    except Exception as req_error:
+                        debug_logs.append(f"BFS: Failed to fetch {url}: {str(req_error)}")
                         continue
-                debug_logs.append(f"Requests BFS found {len(discovered_urls)} URLs")
+                        
+                debug_logs.append(f"Requests BFS found {len(discovered_urls)} URLs total")
             except Exception as e:
-                debug_logs.append(f"Requests BFS failed: {str(e)}")
+                debug_logs.append(f"Requests BFS exception: {str(e)}")
+                import traceback
+                debug_logs.append(f"BFS Traceback: {traceback.format_exc()}")
 
         debug_logs.append(f"Scan complete. Total found: {len(discovered_urls)}")
         
