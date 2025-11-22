@@ -8,6 +8,7 @@ llm = ChatOpenAI(model="gpt-3.5-turbo")
 
 def get_rag_chain(user_id: str):
     vectorstore = get_vectorstore()
+    # PGVector supports metadata filtering directly
     retriever = vectorstore.as_retriever(search_kwargs={"filter": {"user_id": user_id}})
     
     from user_data_store import get_user_data

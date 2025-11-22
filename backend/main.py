@@ -21,6 +21,10 @@ app.add_middleware(
 )
 
 
+# Initialize Database Tables
+from database import init_db
+init_db()
+
 # (接下来是 class ChatRequest 和其他路由...)
 
 class ChatRequest(BaseModel):

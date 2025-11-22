@@ -2,24 +2,24 @@ import os
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
-from langchain_chroma import Chroma
+from langchain_postgres import PGVector
 from langchain_core.documents import Document
 from typing import List
+from database import DATABASE_URL
 
 # Initialize embeddings
 embeddings = OpenAIEmbeddings()
 
-# Use persistent data directory for Railway Volumes
-# Falls back to current directory for local development
-DATA_DIR = os.getenv("DATA_DIR", "/app/data")
-os.makedirs(DATA_DIR, exist_ok=True)
-persist_directory = os.path.join(DATA_DIR, "chroma_db")
-
 def get_vectorstore():
-    return Chroma(
-        persist_directory=persist_directory,
-        embedding_function=embeddings
+    # LangChain Postgres vector store
+    # collection_name is like a table for vectors
+    return PGVector(
+        embeddings=embeddings,
+        collection_name="docmind_vectors",
+        connection=DATABASE_URL,
+        use_jsonb=True,
     )
+
 def add_user_metadata(documents, user_id):
     for doc in documents:
         doc.metadata["user_id"] = user_id
@@ -68,61 +68,78 @@ async def ingest_url(url: str, user_id: str):
     return len(splits)
 
 def get_user_documents(user_id: str):
-    vectorstore = get_vectorstore()
-    # Fetch all documents for the user
-    # Note: Chroma's get() method returns a dict with 'ids', 'embeddings', 'metadatas', 'documents'
-    results = vectorstore.get(where={"user_id": user_id})
+    # Postgres vector store doesn't have a simple "get all metadata" method like Chroma
+    # We need to query the underlying table using SQLAlchemy or raw SQL
+    # For simplicity, we will use a raw SQL query via the vectorstore's connection
     
-    metadatas = results.get("metadatas", [])
-    unique_sources = set()
+    # Note: This is a bit of a hack because LangChain's PGVector abstraction hides the table
+    # But we can access the driver.
+    
+    # Let's use a direct SQLAlchemy query for metadata listing
+    from sqlalchemy import create_engine, text
+    engine = create_engine(DATABASE_URL)
+    
+    # The table name is usually langchain_pg_embedding
+    # We need to join with collection table to filter by collection_name if needed, 
+    # but here we assume one collection.
+    
+    # The cmetadata column is JSONB
+    sql = text("""
+        SELECT cmetadata 
+        FROM langchain_pg_embedding 
+        WHERE cmetadata ->> 'user_id' = :user_id
+    """)
+    
     documents_list = []
+    unique_sources = set()
     
-    for meta in metadatas:
-        if not meta:
-            continue
-        source = meta.get("source")
-        if source and source not in unique_sources:
-            unique_sources.add(source)
+    with engine.connect() as conn:
+        result = conn.execute(sql, {"user_id": user_id})
+        for row in result:
+            meta = row[0]
+            if not meta: continue
             
-            # Determine type and clean name
-            if source.startswith("http"):
-                doc_type = "url"
-                name = source
-            else:
-                doc_type = "file"
-                # Remove temp_ prefix and path
-                name = os.path.basename(source).replace("temp_", "")
+            source = meta.get("source")
+            if source and source not in unique_sources:
+                unique_sources.add(source)
                 
-            documents_list.append({
-                "source": name,
-                "type": doc_type,
-                "original_source": source
-            })
+                # Determine type and clean name
+                if source.startswith("http"):
+                    doc_type = "url"
+                    name = source
+                else:
+                    doc_type = "file"
+                    # Remove temp_ prefix and path
+                    name = os.path.basename(source).replace("temp_", "")
+                    
+                documents_list.append({
+                    "source": name,
+                    "type": doc_type,
+                    "original_source": source
+                })
     
-    print(f"Found {len(documents_list)} unique documents for user {user_id}: {[d['source'] for d in documents_list]}")
     return documents_list
 
 def delete_user_document(user_id: str, source: str):
     vectorstore = get_vectorstore()
     print(f"Attempting to delete document for user: {user_id}, source: {source}")
     
-    # Construct where clause using $and for multiple conditions
-    where_clause = {
-        "$and": [
-            {"user_id": {"$eq": user_id}},
-            {"source": {"$eq": source}}
-        ]
-    }
+    # PGVector delete method usually takes IDs. 
+    # We need to find IDs first.
     
-    # Verify existence before delete
-    existing = vectorstore.get(where=where_clause)
-    print(f"Found {len(existing['ids'])} chunks to delete")
+    # Again, direct SQL is most reliable for "delete by metadata" in this specific implementation
+    from sqlalchemy import create_engine, text
+    engine = create_engine(DATABASE_URL)
     
-    # Delete documents
-    vectorstore.delete(where=where_clause)
+    sql = text("""
+        DELETE FROM langchain_pg_embedding 
+        WHERE cmetadata ->> 'user_id' = :user_id 
+        AND cmetadata ->> 'source' = :source
+    """)
     
-    # Verify deletion
-    remaining = vectorstore.get(where=where_clause)
-    print(f"Remaining chunks after delete: {len(remaining['ids'])}")
-    
+    with engine.connect() as conn:
+        result = conn.execute(sql, {"user_id": user_id, "source": source})
+        conn.commit()
+        print(f"Deleted {result.rowcount} rows")
+        
     return True
