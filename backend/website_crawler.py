@@ -142,16 +142,28 @@ async def crawl_website(base_url: str, max_pages=500, max_time=120):
                 visited = set()
                 to_visit = [base_url]
                 session = requests.Session()
-                # More realistic browser headers to avoid 403
+                
+                # Advanced anti-detection headers
                 session.headers.update({
                     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                    'Accept-Language': 'en-US,en;q=0.5',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9',
                     'Accept-Encoding': 'gzip, deflate, br',
                     'DNT': '1',
                     'Connection': 'keep-alive',
-                    'Upgrade-Insecure-Requests': '1'
+                    'Upgrade-Insecure-Requests': '1',
+                    'Sec-Fetch-Dest': 'document',
+                    'Sec-Fetch-Mode': 'navigate',
+                    'Sec-Fetch-Site': 'none',
+                    'Sec-Fetch-User': '?1',
+                    'Cache-Control': 'max-age=0',
+                    'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+                    'sec-ch-ua-mobile': '?0',
+                    'sec-ch-ua-platform': '"macOS"'
                 })
+                
+                # Add initial cookies to look more like a real browser
+                session.cookies.set('visited', 'true', domain=base_domain.replace('www.', ''))
                 
                 while to_visit and len(discovered_urls) < max_pages:
                     if time.time() - start_time > max_time: 
@@ -163,7 +175,16 @@ async def crawl_website(base_url: str, max_pages=500, max_time=120):
                     visited.add(url)
                     
                     try:
-                        resp = session.get(url, timeout=10)
+                        # Add slight delay to look more human
+                        import time as time_module
+                        time_module.sleep(0.5)
+                        
+                        # Add Referer header for subsequent requests
+                        headers = {}
+                        if len(visited) > 1:
+                            headers['Referer'] = base_url
+                        
+                        resp = session.get(url, timeout=15, headers=headers, allow_redirects=True)
                         debug_logs.append(f"BFS: Fetched {url} - Status {resp.status_code}")
                         
                         if resp.status_code == 200:
@@ -174,7 +195,7 @@ async def crawl_website(base_url: str, max_pages=500, max_time=120):
                                 link = urljoin(url, a['href'])
                                 parsed = urlparse(link)
                                 if parsed.netloc.replace('www.', '') == normalized_domain:
-                                    clean = link.split('#')[0]
+                                    clean = link.split('#')[0].split('?')[0]  # Remove query params too
                                     if clean not in visited and clean not in discovered_urls and clean not in to_visit:
                                         to_visit.append(clean)
                                         links_found += 1
