@@ -152,7 +152,8 @@ const Upload = () => {
             const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 min timeout
 
             const response = await axios.post(`${API_BASE_URL}/scan/website`, {
-                url: websiteUrl
+                url: websiteUrl,
+                use_playwright: usePlaywright
             }, {
                 headers: {
                     'user-id': user.id
@@ -501,6 +502,20 @@ const Upload = () => {
                                                         )}
                                                     </button>
                                                 </div>
+
+                                                <div className="mt-3 flex items-center gap-2">
+                                                    <input
+                                                        type="checkbox"
+                                                        id="usePlaywright"
+                                                        checked={usePlaywright}
+                                                        onChange={(e) => setUsePlaywright(e.target.checked)}
+                                                        className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                                    />
+                                                    <label htmlFor="usePlaywright" className="text-sm text-slate-600 cursor-pointer select-none">
+                                                        Use Advanced Mode (Slower, but bypasses anti-bot protection)
+                                                    </label>
+                                                </div>
+
                                                 <p className="text-xs text-slate-500 mt-2">
                                                     Enter a website URL and we will scan the pages on the website. You can then select which pages or groups of pages to include in your bot.
                                                 </p>

@@ -5,7 +5,8 @@
 PORT=${PORT:-8080}
 
 echo "Installing Playwright browsers..."
-playwright install chromium --with-deps || echo "Warning: Playwright browser installation failed, crawler may not work for protected sites"
+echo "Installing Playwright browsers..."
+playwright install chromium || playwright install chromium --with-deps || echo "Warning: Playwright browser installation failed, crawler may not work for protected sites"
 
 echo "🚀 Starting uvicorn on port $PORT..."
 uvicorn main:app --host 0.0.0.0 --port $PORT
