@@ -2,6 +2,23 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Send, Loader2, Bot, User } from 'lucide-react';
 
+// Helper function to determine if text should be white or black based on background color
+const getContrastColor = (hexColor) => {
+    // Remove # if present
+    const hex = hexColor.replace('#', '');
+
+    // Convert to RGB
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+
+    // Calculate relative luminance using WCAG formula
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+    // Return white for dark backgrounds, black for light backgrounds
+    return luminance > 0.5 ? '#000000' : '#FFFFFF';
+};
+
 const EmbedChat = () => {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
@@ -101,23 +118,23 @@ const EmbedChat = () => {
             {/* Header */}
             <div
                 className="flex items-center gap-3 px-4 py-3 border-b border-white/10 shadow-sm sticky top-0 z-10 transition-colors"
-                style={{ backgroundColor: settings.widget_color, color: '#fff' }}
+                style={{ backgroundColor: settings.widget_color, color: getContrastColor(settings.widget_color) }}
             >
                 {settings.header_logo ? (
                     <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center overflow-hidden border border-white/10">
                         <img src={settings.header_logo} alt="Logo" className="w-full h-full object-cover" />
                     </div>
                 ) : (
-                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shadow-sm border border-white/10">
-                        <Bot className="w-5 h-5 text-white" />
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-sm border" style={{ backgroundColor: `${getContrastColor(settings.widget_color)}20`, borderColor: `${getContrastColor(settings.widget_color)}10` }}>
+                        <Bot className="w-5 h-5" style={{ color: getContrastColor(settings.widget_color) }} />
                     </div>
                 )}
 
                 <div>
-                    <h1 className="font-bold text-white text-base leading-tight">{botName}</h1>
+                    <h1 className="font-bold text-base leading-tight" style={{ color: getContrastColor(settings.widget_color) }}>{botName}</h1>
                     <div className="flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.6)]"></span>
-                        <span className="text-xs text-white/90 font-medium">Online</span>
+                        <span className="text-xs font-medium" style={{ color: `${getContrastColor(settings.widget_color)}e6` }}>Online</span>
                     </div>
                 </div>
             </div>
@@ -137,10 +154,10 @@ const EmbedChat = () => {
                             {/* Bubble */}
                             <div
                                 className={`px-4 py-3 text-[15px] leading-relaxed shadow-sm ${msg.role === 'user'
-                                    ? 'text-white rounded-2xl rounded-tr-sm'
+                                    ? 'rounded-2xl rounded-tr-sm'
                                     : 'bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tl-sm'
                                     }`}
-                                style={msg.role === 'user' ? { backgroundColor: settings.widget_color } : {}}
+                                style={msg.role === 'user' ? { backgroundColor: settings.widget_color, color: getContrastColor(settings.widget_color) } : {}}
                             >
                                 <p className="whitespace-pre-wrap">{msg.content}</p>
                             </div>

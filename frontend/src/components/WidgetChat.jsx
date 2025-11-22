@@ -2,6 +2,23 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Send, Bot, X, Minimize2, Zap, ChevronLeft, Sparkles, ThumbsUp, ThumbsDown, Copy, Info, ExternalLink, MessageSquare } from 'lucide-react';
 
+// Helper function to determine if text should be white or black based on background color
+const getContrastColor = (hexColor) => {
+    // Remove # if present
+    const hex = hexColor.replace('#', '');
+
+    // Convert to RGB
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+
+    // Calculate relative luminance using WCAG formula
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+    // Return white for dark backgrounds, black for light backgrounds
+    return luminance > 0.5 ? '#000000' : '#FFFFFF';
+};
+
 const WidgetChat = () => {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
@@ -138,7 +155,7 @@ const WidgetChat = () => {
                 className="absolute top-0 left-0 right-0 z-20 px-4 py-3 flex items-center justify-between backdrop-blur-md border-b border-white/10 shadow-sm transition-all duration-300"
                 style={{
                     backgroundColor: headerColor,
-                    color: '#fff'
+                    color: getContrastColor(headerColor)
                 }}
             >
                 <div className="flex items-center gap-3">
@@ -147,19 +164,22 @@ const WidgetChat = () => {
                             <img src={settings.header_logo} alt="Logo" className="w-full h-full object-cover" />
                         </div>
                     ) : (
-                        <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shadow-sm border border-white/10">
-                            <MessageSquare className="w-4 h-4 text-white" />
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-sm border" style={{ backgroundColor: `${getContrastColor(headerColor)}20`, borderColor: `${getContrastColor(headerColor)}10` }}>
+                            <MessageSquare className="w-4 h-4" style={{ color: getContrastColor(headerColor) }} />
                         </div>
                     )}
 
                     <div>
-                        <h2 className="font-bold text-base text-white leading-tight">{settings.bot_name || 'DocMind AI'}</h2>
+                        <h2 className="font-bold text-base leading-tight" style={{ color: getContrastColor(headerColor) }}>{settings.bot_name || 'DocMind AI'}</h2>
                     </div>
                 </div>
-                <div className="flex items-center gap-1 text-white/90">
+                <div className="flex items-center gap-1" style={{ color: `${getContrastColor(headerColor)}e6` }}>
                     <button
                         onClick={handleClose}
-                        className="p-1.5 hover:bg-white/20 rounded-full transition-colors text-white"
+                        className="p-1.5 rounded-full transition-colors"
+                        style={{ color: getContrastColor(headerColor) }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `${getContrastColor(headerColor)}20`}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                     >
                         <X className="w-5 h-5" />
                     </button>
@@ -184,10 +204,10 @@ const WidgetChat = () => {
                                     <div className="flex flex-col gap-1">
                                         <div
                                             className={`px-4 py-3 text-[15px] leading-relaxed shadow-sm ${msg.role === 'user'
-                                                ? 'text-white rounded-2xl rounded-tr-sm'
+                                                ? 'rounded-2xl rounded-tr-sm'
                                                 : 'bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tl-sm'
                                                 }`}
-                                            style={msg.role === 'user' ? { backgroundColor: headerColor } : {}}
+                                            style={msg.role === 'user' ? { backgroundColor: headerColor, color: getContrastColor(headerColor) } : {}}
                                         >
                                             <p className="whitespace-pre-wrap">{msg.content}</p>
                                         </div>
