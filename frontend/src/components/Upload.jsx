@@ -253,11 +253,11 @@ const Upload = () => {
     };
 
     return (
-        <div className="max-w-5xl mx-auto space-y-6">
-            {/* Upload Interface */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-120px)]">
+            {/* Left Column: Upload Interface */}
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full">
                 {/* Tabs */}
-                <div className="flex border-b border-slate-100">
+                <div className="flex border-b border-slate-100 shrink-0">
                     <button
                         onClick={() => setActiveTab('file')}
                         className={`flex-1 py-4 text-sm font-medium transition-colors ${activeTab === 'file' ? 'text-indigo-600 bg-slate-50/50' : 'text-slate-500 hover:text-slate-700'}`}
@@ -287,7 +287,7 @@ const Upload = () => {
                     </button>
                 </div>
 
-                <div className="p-6">
+                <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
                     {/* File Tab */}
                     {activeTab === 'file' && (
                         <div className="space-y-6">
@@ -405,7 +405,7 @@ const Upload = () => {
                                         </button>
                                     </div>
 
-                                    <div className="border border-slate-200 rounded-xl max-h-[500px] overflow-y-auto p-2 bg-white scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+                                    <div className="border border-slate-200 rounded-xl max-h-[400px] overflow-y-auto p-2 bg-white scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
                                         <TreeItem
                                             node={urlTree}
                                             selectedUrls={selectedUrls}
@@ -448,8 +448,8 @@ const Upload = () => {
                 </div>
             </div>
 
-            {/* Knowledge List - Shows uploaded sources */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            {/* Right Column: Knowledge List */}
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden h-full">
                 <KnowledgeList
                     refreshTrigger={refreshTrigger}
                     filterType={activeTab === 'file' ? 'file' : 'url'}

@@ -254,7 +254,9 @@ async def upload_logo(request: Request, file: UploadFile = File(...)):
         
     except Exception as e:
         print(f"Error in upload_logo: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
 
 # --- New Endpoints for Logs and Team ---
