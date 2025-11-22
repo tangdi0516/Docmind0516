@@ -19,12 +19,12 @@ USER_AGENTS = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 ]
 
-async def crawl_website(base_url: str, max_pages=500, max_time=120):
+async def crawl_website(base_url: str, max_pages=500, max_time=120, force_playwright=False):
     """
     Crawl a website and return discovered URLs in a tree structure.
     This uses a multi-phase approach:
     1. Try sitemap.xml
-    2. (Playwright disabled by default on Railway)
+    2. Playwright (only if force_playwright=True, for protected sites)
     3. Fallback to requests-based BFS
     """
     debug_logs = []
@@ -83,8 +83,8 @@ async def crawl_website(base_url: str, max_pages=500, max_time=120):
             debug_logs.append(f"Sitemap error: {str(e)}")
 
         # --- Phase 2: Playwright Deep Scan ---
-        # Enable for sites with anti-bot protection (like Cloudflare)
-        if len(discovered_urls) < 5:
+        # Only use if explicitly requested by user (force_playwright=True)
+        if force_playwright and len(discovered_urls) < 5:
             debug_logs.append(f"Sitemap yielded {len(discovered_urls)} URLs. Attempting Playwright...")
             try:
                 from playwright.async_api import async_playwright

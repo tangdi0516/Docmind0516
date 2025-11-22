@@ -126,6 +126,9 @@ const Upload = () => {
     const [showManualInput, setShowManualInput] = useState(false);
     const [manualUrls, setManualUrls] = useState('');
 
+    // Advanced mode
+    const [usePlaywright, setUsePlaywright] = useState(false);
+
     // Refresh trigger for KnowledgeList
     const [refreshTrigger, setRefreshTrigger] = useState(0);
 

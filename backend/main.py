@@ -394,6 +394,7 @@ async def remove_team_member(member_id: int, request: Request, db: Session = Dep
 
 class ScanWebsiteRequest(BaseModel):
     url: str
+    use_playwright: Optional[bool] = False  # Optional advanced mode for protected sites
 
 @app.post("/scan/website")
 async def scan_website(request: Request, scan_request: ScanWebsiteRequest):
@@ -433,7 +434,12 @@ async def scan_website(request: Request, scan_request: ScanWebsiteRequest):
         
         # Crawl the website with explicit error handling
         try:
-            result = await crawl_website(scan_request.url, max_pages=1000, max_time=90)
+            result = await crawl_website(
+                scan_request.url, 
+                max_pages=1000, 
+                max_time=90,
+                force_playwright=scan_request.use_playwright
+            )
             print(f"[API] Scan completed. Total count: {result.get('total_count', 0)}")
             
             # Always return 200 OK with result (even if crawler found 0 pages)
@@ -463,6 +469,8 @@ async def scan_website(request: Request, scan_request: ScanWebsiteRequest):
         print(f"[API] Endpoint exception: {e}")
         import traceback
         traceback.print_exc()
+        
+        return JSONResponse(
             status_code=200,
             content={
                 "base_url": getattr(scan_request, 'url', 'unknown'),
