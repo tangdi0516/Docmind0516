@@ -16,10 +16,10 @@ const DashboardLayout = () => {
     const getActiveTab = () => {
         const path = location.pathname;
         if (path === '/chat') return 'chat';
-        if (path === '/train') return 'upload';
-        if (path === '/widget-config') return 'widget';
-        if (path === '/logs') return 'logs';
-        if (path === '/team') return 'team';
+        if (path.startsWith('/knowledge')) return 'knowledge';
+        if (path === '/widget') return 'widget';
+        if (path === '/analytics') return 'analytics';
+        if (path.startsWith('/settings/team')) return 'team';
         return 'dashboard';
     };
 
@@ -59,16 +59,16 @@ const DashboardLayout = () => {
                                 Chat
                             </Link>
                             <Link
-                                to="/train"
-                                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'upload'
+                                to="/knowledge"
+                                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'knowledge'
                                     ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5'
                                     : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'
                                     }`}
                             >
-                                Upload & Train
+                                Knowledge
                             </Link>
                             <Link
-                                to="/widget-config"
+                                to="/widget"
                                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'widget'
                                     ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5'
                                     : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'
@@ -77,16 +77,16 @@ const DashboardLayout = () => {
                                 Widget
                             </Link>
                             <Link
-                                to="/logs"
-                                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'logs'
+                                to="/analytics"
+                                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'analytics'
                                     ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5'
                                     : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'
                                     }`}
                             >
-                                Logs
+                                Analytics
                             </Link>
                             <Link
-                                to="/team"
+                                to="/settings/team"
                                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'team'
                                     ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5'
                                     : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'
@@ -114,9 +114,9 @@ const DashboardLayout = () => {
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
                     {activeTab === 'dashboard' && <Dashboard />}
                     {activeTab === 'chat' && <Chat />}
-                    {activeTab === 'upload' && <Upload />}
+                    {activeTab === 'knowledge' && <Upload />}
                     {activeTab === 'widget' && <WidgetGenerator />}
-                    {activeTab === 'logs' && <LogsPage />}
+                    {activeTab === 'analytics' && <LogsPage />}
                     {activeTab === 'team' && <TeamPage />}
                 </div>
             </main>

@@ -63,7 +63,7 @@ function App() {
                     }
                 />
 
-                {/* Protected Dashboard Routes */}
+                {/* Protected Dashboard Routes - More semantic URLs */}
                 <Route
                     path="/dashboard"
                     element={
@@ -81,7 +81,7 @@ function App() {
                     }
                 />
                 <Route
-                    path="/train"
+                    path="/knowledge/*"
                     element={
                         <SignedIn>
                             <DashboardLayout />
@@ -89,7 +89,7 @@ function App() {
                     }
                 />
                 <Route
-                    path="/widget-config"
+                    path="/widget"
                     element={
                         <SignedIn>
                             <DashboardLayout />
@@ -97,7 +97,7 @@ function App() {
                     }
                 />
                 <Route
-                    path="/logs"
+                    path="/analytics"
                     element={
                         <SignedIn>
                             <DashboardLayout />
@@ -105,13 +105,20 @@ function App() {
                     }
                 />
                 <Route
-                    path="/team"
+                    path="/settings/team"
                     element={
                         <SignedIn>
                             <DashboardLayout />
                         </SignedIn>
                     }
                 />
+
+                {/* Legacy redirects for backwards compatibility */}
+                <Route path="/train" element={<Navigate to="/knowledge" replace />} />
+                <Route path="/upload" element={<Navigate to="/knowledge" replace />} />
+                <Route path="/logs" element={<Navigate to="/analytics" replace />} />
+                <Route path="/team" element={<Navigate to="/settings/team" replace />} />
+                <Route path="/widget-config" element={<Navigate to="/widget" replace />} />
 
                 {/* Catch-all - redirect to root */}
                 <Route path="/*" element={<Navigate to="/" replace />} />
