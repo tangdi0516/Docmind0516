@@ -1,19 +1,15 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { SignedIn, SignedOut, RedirectToSignIn, SignIn, UserButton } from "@clerk/clerk-react";
+import { SignedIn, SignedOut, SignIn } from "@clerk/clerk-react";
 import EmbedChat from './components/EmbedChat';
 import WidgetChat from './components/WidgetChat';
 import LandingPage from './components/LandingPage';
 import DashboardLayout from './components/DashboardLayout';
 import { MessageSquare } from 'lucide-react';
-import { useState } from 'react';
 
 function App() {
-    const [activeTab, setActiveTab] = useState('dashboard');
-
     // Domain-based routing logic
     const hostname = window.location.hostname;
     const isLandingDomain = hostname === 'docmind.com.au' || hostname === 'www.docmind.com.au';
-    const isAppDomain = hostname.startsWith('app.') || hostname.includes('vercel.app') || hostname.includes('localhost');
 
     // Helper to determine where to redirect login
     const getAppUrl = () => {
@@ -60,14 +56,64 @@ function App() {
                                     </div>
                                 </SignedOut>
                                 <SignedIn>
-                                    <DashboardLayout activeTab={activeTab} setActiveTab={setActiveTab} />
+                                    <Navigate to="/dashboard" replace />
                                 </SignedIn>
                             </>
                         )
                     }
                 />
 
-                {/* Catch-all */}
+                {/* Protected Dashboard Routes */}
+                <Route
+                    path="/dashboard"
+                    element={
+                        <SignedIn>
+                            <DashboardLayout />
+                        </SignedIn>
+                    }
+                />
+                <Route
+                    path="/chat"
+                    element={
+                        <SignedIn>
+                            <DashboardLayout />
+                        </SignedIn>
+                    }
+                />
+                <Route
+                    path="/train"
+                    element={
+                        <SignedIn>
+                            <DashboardLayout />
+                        </SignedIn>
+                    }
+                />
+                <Route
+                    path="/widget-config"
+                    element={
+                        <SignedIn>
+                            <DashboardLayout />
+                        </SignedIn>
+                    }
+                />
+                <Route
+                    path="/logs"
+                    element={
+                        <SignedIn>
+                            <DashboardLayout />
+                        </SignedIn>
+                    }
+                />
+                <Route
+                    path="/team"
+                    element={
+                        <SignedIn>
+                            <DashboardLayout />
+                        </SignedIn>
+                    }
+                />
+
+                {/* Catch-all - redirect to root */}
                 <Route path="/*" element={<Navigate to="/" replace />} />
             </Routes>
         </BrowserRouter>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { UserButton } from "@clerk/clerk-react";
 import { MessageSquare } from 'lucide-react';
 import Dashboard from './Dashboard';
@@ -8,80 +9,102 @@ import WidgetGenerator from './WidgetGenerator';
 import LogsPage from './LogsPage';
 import TeamPage from './TeamPage';
 
-const DashboardLayout = ({ activeTab, setActiveTab }) => {
+const DashboardLayout = () => {
+    const location = useLocation();
+
+    // Determine active tab from URL
+    const getActiveTab = () => {
+        const path = location.pathname;
+        if (path === '/chat') return 'chat';
+        if (path === '/train') return 'upload';
+        if (path === '/widget-config') return 'widget';
+        if (path === '/logs') return 'logs';
+        if (path === '/team') return 'team';
+        return 'dashboard';
+    };
+
+    const activeTab = getActiveTab();
+
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900">
             <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/60 shadow-sm transition-all duration-300">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-3 group cursor-pointer">
+                    <Link to="/dashboard" className="flex items-center gap-3 group cursor-pointer">
                         <div className="bg-indigo-600 p-2 rounded-xl shadow-lg shadow-indigo-600/20 group-hover:scale-105 transition-transform duration-300">
                             <MessageSquare className="w-5 h-5 text-white" />
                         </div>
                         <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 tracking-tight">
                             DocMind
                         </h1>
-                    </div>
+                    </Link>
 
                     <div className="flex items-center gap-4">
                         <nav className="flex gap-1 bg-slate-100/50 p-1 rounded-xl border border-slate-200/50">
-                            <button
-                                onClick={() => setActiveTab('dashboard')}
+                            <Link
+                                to="/dashboard"
                                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'dashboard'
                                     ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5'
                                     : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'
                                     }`}
                             >
                                 Dashboard
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('chat')}
+                            </Link>
+                            <Link
+                                to="/chat"
                                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'chat'
                                     ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5'
                                     : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'
                                     }`}
                             >
                                 Chat
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('upload')}
+                            </Link>
+                            <Link
+                                to="/train"
                                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'upload'
                                     ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5'
                                     : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'
                                     }`}
                             >
                                 Upload & Train
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('widget')}
+                            </Link>
+                            <Link
+                                to="/widget-config"
                                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'widget'
                                     ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5'
                                     : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'
                                     }`}
                             >
                                 Widget
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('logs')}
+                            </Link>
+                            <Link
+                                to="/logs"
                                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'logs'
                                     ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5'
                                     : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'
                                     }`}
                             >
                                 Logs
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('team')}
+                            </Link>
+                            <Link
+                                to="/team"
                                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'team'
                                     ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5'
                                     : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'
                                     }`}
                             >
                                 Team
-                            </button>
+                            </Link>
                         </nav>
 
-                        <div className="pl-2 border-l border-slate-200">
-                            <UserButton />
+                        <div className="flex items-center">
+                            <UserButton
+                                afterSignOutUrl="/"
+                                appearance={{
+                                    elements: {
+                                        avatarBox: "w-9 h-9 rounded-xl ring-2 ring-offset-2 ring-indigo-600/20"
+                                    }
+                                }}
+                            />
                         </div>
                     </div>
                 </div>
