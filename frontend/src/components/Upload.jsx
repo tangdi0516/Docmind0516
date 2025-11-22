@@ -147,6 +147,9 @@ const Upload = () => {
             const response = await axios.post(`${API_BASE_URL}/scan/website`, {
                 url: websiteUrl
             }, {
+                headers: {
+                    'user-id': user.id
+                },
                 signal: controller.signal
             });
 
