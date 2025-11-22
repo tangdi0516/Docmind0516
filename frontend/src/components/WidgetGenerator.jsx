@@ -54,6 +54,7 @@ const WidgetGenerator = () => {
 
         try {
             setSaving(true);
+            console.log('[Logo Upload] Starting upload...');
 
             // First, upload the logo to get the URL
             const response = await axios.post(`${API_BASE_URL}/upload/logo`, formData, {
@@ -63,29 +64,39 @@ const WidgetGenerator = () => {
                 }
             });
             const newLogoUrl = response.data.url;
+            console.log('[Logo Upload] Upload successful. URL:', newLogoUrl);
 
             // Fetch current settings to preserve all fields
+            console.log('[Logo Upload] Fetching current settings...');
             const currentSettingsRes = await axios.get(`${API_BASE_URL}/user/settings`, {
                 headers: { 'user-id': user.id }
             });
+            console.log('[Logo Upload] Current settings:', currentSettingsRes.data);
 
             // Save to backend with the new logo URL
+            console.log('[Logo Upload] Saving to backend...');
             await axios.post(`${API_BASE_URL}/user/settings`, {
                 ...currentSettingsRes.data,
                 header_logo: newLogoUrl
             }, {
                 headers: { 'user-id': user.id }
             });
+            console.log('[Logo Upload] Saved to backend successfully');
 
             // Update local state
             setSettings(prev => ({ ...prev, header_logo: newLogoUrl }));
+            console.log('[Logo Upload] Updated local state');
 
             // Force iframe refresh
-            setLastUpdated(Date.now());
+            const newTimestamp = Date.now();
+            setLastUpdated(newTimestamp);
+            console.log('[Logo Upload] Triggered iframe refresh with timestamp:', newTimestamp);
+
+            alert('✅ Logo uploaded successfully! Preview should update shortly.');
 
         } catch (error) {
-            console.error("Error uploading logo:", error);
-            alert("Failed to upload logo");
+            console.error("[Logo Upload] Error:", error);
+            alert(`Failed to upload logo: ${error.message}`);
         } finally {
             setSaving(false);
         }

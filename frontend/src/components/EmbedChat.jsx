@@ -53,9 +53,11 @@ const EmbedChat = () => {
 
     const fetchSettings = async (uid) => {
         try {
+            console.log('[EmbedChat] Fetching settings for user:', uid);
             const response = await axios.get(`${API_BASE_URL}/user/settings?t=${Date.now()}`, {
                 headers: { 'user-id': uid }
             });
+            console.log('[EmbedChat] Settings fetched:', response.data);
             const name = response.data.bot_name || 'DocMind';
             setBotName(name);
             setSettings({
@@ -63,11 +65,12 @@ const EmbedChat = () => {
                 header_logo: response.data.header_logo || '',
                 initial_message: response.data.initial_message || 'Hello! How can I help you today?'
             });
+            console.log('[EmbedChat] Logo URL set to:', response.data.header_logo);
             setMessages([
                 { role: 'assistant', content: response.data.initial_message || `Hello! I am ${name}. How can I help you today?` }
             ]);
         } catch (error) {
-            console.error("Error fetching settings:", error);
+            console.error("[EmbedChat] Error fetching settings:", error);
             setMessages([
                 { role: 'assistant', content: 'Hello! I am DocMind Assistant. How can I help you today?' }
             ]);
