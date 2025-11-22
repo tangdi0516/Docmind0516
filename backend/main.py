@@ -314,3 +314,70 @@ async def remove_team_member(member_id: int, request: Request, db: Session = Dep
     except Exception as e:
         print(f"Error in remove_team_member: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# --- Website Crawling Endpoints ---
+
+class ScanWebsiteRequest(BaseModel):
+    url: str
+
+@app.post("/scan/website")
+async def scan_website(request: Request, scan_request: ScanWebsiteRequest):
+    try:
+        user_id = request.headers.get("user-id")
+        if not user_id:
+            raise HTTPException(status_code=400, detail="user-id header is required")
+        
+        from website_crawler import crawl_website
+        
+        # Crawl the website and discover URLs
+        discovered_urls = crawl_website(scan_request.url, max_pages=100)
+        
+        return {
+            "base_url": scan_request.url,
+            "discovered_urls": discovered_urls,
+            "count": len(discovered_urls)
+        }
+    except Exception as e:
+        print(f"Error in scan_website: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+class TrainWebsiteRequest(BaseModel):
+    urls: List[str]
+
+@app.post("/train/website")
+async def train_website(request: Request, train_request: TrainWebsiteRequest):
+    try:
+        user_id = request.headers.get("user-id")
+        if not user_id:
+            raise HTTPException(status_code=400, detail="user-id header is required")
+        
+        from ingestion import ingest_url
+        
+        results = []
+        total_chunks = 0
+        
+        for url in train_request.urls:
+            try:
+                num_chunks = await ingest_url(url, user_id)
+                total_chunks += num_chunks
+                results.append({
+                    "url": url,
+                    "status": "success",
+                    "chunks": num_chunks
+                })
+            except Exception as e:
+                results.append({
+                    "url": url,
+                    "status": "error",
+                    "error": str(e)
+                })
+        
+        return {
+            "total_urls": len(train_request.urls),
+            "total_chunks": total_chunks,
+            "results": results
+        }
+    except Exception as e:
+        print(f"Error in train_website: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+

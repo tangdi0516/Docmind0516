@@ -1,20 +1,23 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Upload as UploadIcon, File, CheckCircle, AlertCircle, Loader2, Globe, Link } from 'lucide-react';
+import { Upload as UploadIcon, File, CheckCircle, AlertCircle, Loader2, Globe, Link, Search, Check } from 'lucide-react';
 import { useUser } from "@clerk/clerk-react";
 import KnowledgeList from './KnowledgeList';
 
 const Upload = () => {
     const { user } = useUser();
 
-    const [mode, setMode] = useState('file'); // 'file' or 'url'
+    const [mode, setMode] = useState('file'); // 'file', 'url', or 'website'
     const [file, setFile] = useState(null);
     const [url, setUrl] = useState('');
-    const [status, setStatus] = useState('idle'); // idle, uploading, training, success, error
+    const [websiteUrl, setWebsiteUrl] = useState('');
+    const [discoveredUrls, setDiscoveredUrls] = useState([]);
+    const [selectedUrls, setSelectedUrls] = useState(new Set());
+    const [websiteStep, setWebsiteStep] = useState(1); // 1: input, 2: select pages, 3: importing
+    const [status, setStatus] = useState('idle'); // idle, uploading, training, success, error, scanning
     const [message, setMessage] = useState('');
     const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-    // [Temporary] Switch to localhost to show new features
     const API_BASE_URL = 'https://docmind0516-production.up.railway.app';
 
     const handleFileChange = (e) => {
@@ -22,6 +25,80 @@ const Upload = () => {
             setFile(e.target.files[0]);
             setStatus('idle');
             setMessage('');
+        }
+    };
+
+    const handleScanWebsite = async () => {
+        if (!websiteUrl.trim()) return;
+
+        setStatus('scanning');
+        setMessage('Scanning website for pages...');
+
+        try {
+            const response = await axios.post(
+                `${API_BASE_URL}/scan/website`,
+                { url: websiteUrl },
+                { headers: { 'user-id': user.id } }
+            );
+
+            setDiscoveredUrls(response.data.discovered_urls);
+            setWebsiteStep(2);
+            setStatus('idle');
+            setMessage('');
+        } catch (error) {
+            console.error(error);
+            setStatus('error');
+            setMessage('Failed to scan website. Please check the URL and try again.');
+        }
+    };
+
+    const handleSelectAll = () => {
+        if (selectedUrls.size === discoveredUrls.length) {
+            setSelectedUrls(new Set());
+        } else {
+            setSelectedUrls(new Set(discoveredUrls));
+        }
+    };
+
+    const handleToggleUrl = (url) => {
+        const newSelected = new Set(selectedUrls);
+        if (newSelected.has(url)) {
+            newSelected.delete(url);
+        } else {
+            newSelected.add(url);
+        }
+        setSelectedUrls(newSelected);
+    };
+
+    const handleTrainWebsite = async () => {
+        if (selectedUrls.size === 0) return;
+
+        setStatus('uploading');
+        setWebsiteStep(3);
+
+        try {
+            await axios.post(
+                `${API_BASE_URL}/train/website`,
+                { urls: Array.from(selectedUrls) },
+                { headers: { 'user-id': user.id } }
+            );
+
+            setStatus('success');
+            setMessage(`Successfully indexed ${selectedUrls.size} pages!`);
+            setRefreshTrigger(prev => prev + 1);
+
+            setTimeout(() => {
+                setStatus('idle');
+                setMessage('');
+                setWebsiteUrl('');
+                setDiscoveredUrls([]);
+                setSelectedUrls(new Set());
+                setWebsiteStep(1);
+            }, 3000);
+        } catch (error) {
+            console.error(error);
+            setStatus('error');
+            setMessage('Failed to index pages. Please try again.');
         }
     };
 
@@ -74,11 +151,9 @@ const Upload = () => {
             setMessage(mode === 'file' ? 'Document uploaded and indexed successfully!' : 'URL content ingested successfully!');
             setRefreshTrigger(prev => prev + 1);
 
-            // Reset inputs
             if (mode === 'file') setFile(null);
             if (mode === 'url') setUrl('');
 
-            // Clear success message after 3 seconds
             setTimeout(() => {
                 setStatus('idle');
                 setMessage('');
@@ -103,12 +178,12 @@ const Upload = () => {
                             </div>
                             <div>
                                 <h2 className="text-2xl font-bold text-slate-900">Add Knowledge</h2>
-                                <p className="text-slate-500">Train your bot with files or web pages</p>
+                                <p className="text-slate-500">Train your bot with files, URLs, or websites</p>
                             </div>
                         </div>
 
                         {/* Tabs */}
-                        <div className="flex p-1 bg-slate-200/50 rounded-xl inline-flex w-full">
+                        <div className="flex p-1 bg-slate-200/50 rounded-xl w-full">
                             <button
                                 onClick={() => setMode('file')}
                                 className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${mode === 'file'
@@ -117,7 +192,7 @@ const Upload = () => {
                                     }`}
                             >
                                 <File className="w-4 h-4" />
-                                Upload File
+                                File
                             </button>
                             <button
                                 onClick={() => setMode('url')}
@@ -127,7 +202,17 @@ const Upload = () => {
                                     }`}
                             >
                                 <Globe className="w-4 h-4" />
-                                Import URL
+                                URL
+                            </button>
+                            <button
+                                onClick={() => setMode('website')}
+                                className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${mode === 'website'
+                                    ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5'
+                                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+                                    }`}
+                            >
+                                <Search className="w-4 h-4" />
+                                Website
                             </button>
                         </div>
                     </div>
@@ -157,7 +242,7 @@ const Upload = () => {
                                     </div>
                                 </div>
                             </div>
-                        ) : (
+                        ) : mode === 'url' ? (
                             <div className="space-y-6 flex-1">
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-2">Web Page URL</label>
@@ -175,33 +260,130 @@ const Upload = () => {
                                     </div>
                                     <p className="text-sm text-slate-500 mt-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
                                         <span className="font-semibold text-slate-700 block mb-1">How it works:</span>
-                                        We'll extract the text content from this page to train your bot. This is useful for blog posts, documentation, and articles.
+                                        We'll extract the text content from this page to train your bot.
                                     </p>
                                 </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-6 flex-1">
+                                {websiteStep === 1 && (
+                                    <>
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-2">Website URL</label>
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                    <Globe className="w-5 h-5 text-slate-400" />
+                                                </div>
+                                                <input
+                                                    type="url"
+                                                    value={websiteUrl}
+                                                    onChange={(e) => setWebsiteUrl(e.target.value)}
+                                                    placeholder="https://example.com"
+                                                    className="w-full rounded-xl border-slate-200 bg-slate-50 pl-11 pr-4 py-3.5 text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-indigo-500/20 transition-all"
+                                                />
+                                            </div>
+                                            <p className="text-sm text-slate-500 mt-4 bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                                                <span className="font-semibold text-slate-700 block mb-1">🔍 Scan entire website:</span>
+                                                We'll discover all pages on this website and let you choose which ones to index.
+                                            </p>
+                                        </div>
+                                    </>
+                                )}
+
+                                {websiteStep === 2 && (
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <h3 className="font-semibold text-slate-900">
+                                                Found {discoveredUrls.length} pages
+                                            </h3>
+                                            <button
+                                                onClick={handleSelectAll}
+                                                className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                                            >
+                                                {selectedUrls.size === discoveredUrls.length ? 'Deselect All' : 'Select All'}
+                                            </button>
+                                        </div>
+                                        <div className="border border-slate-200 rounded-xl max-h-96 overflow-y-auto">
+                                            {discoveredUrls.map((url, index) => (
+                                                <label
+                                                    key={index}
+                                                    className="flex items-center p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0"
+                                                >
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedUrls.has(url)}
+                                                        onChange={() => handleToggleUrl(url)}
+                                                        className="mr-3 w-4 h-4 text-indigo-600 rounded"
+                                                    />
+                                                    <span className="text-sm text-slate-700 truncate flex-1">{url}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                        <button
+                                            onClick={() => setWebsiteStep(1)}
+                                            className="text-sm text-slate-500 hover:text-slate-700"
+                                        >
+                                            ← Back to URL
+                                        </button>
+                                    </div>
+                                )}
+
+                                {websiteStep === 3 && (
+                                    <div className="flex flex-col items-center justify-center py-12">
+                                        <Loader2 className="w-12 h-12 text-indigo-600 animate-spin mb-4" />
+                                        <p className="text-slate-700 font-medium">Indexing {selectedUrls.size} pages...</p>
+                                    </div>
+                                )}
                             </div>
                         )}
 
                         {/* Action Button */}
-                        <div className="mt-8">
-                            <button
-                                onClick={handleUpload}
-                                disabled={status === 'uploading' || status === 'training' || (mode === 'file' && !file) || (mode === 'url' && !url)}
-                                className="w-full py-4 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 active:scale-[0.99]"
-                            >
-                                {status === 'uploading' || status === 'training' ? (
-                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                ) : (
-                                    mode === 'file' ? <UploadIcon className="w-5 h-5" /> : <Globe className="w-5 h-5" />
-                                )}
-                                <span className="text-lg">
-                                    {status === 'idle' && (mode === 'file' ? 'Upload and Train' : 'Import URL')}
-                                    {status === 'uploading' && (mode === 'file' ? 'Uploading...' : 'Importing...')}
-                                    {status === 'training' && 'Indexing...'}
-                                    {status === 'success' && 'Success!'}
-                                    {status === 'error' && 'Try Again'}
-                                </span>
-                            </button>
-                        </div>
+                        {!(mode === 'website' && websiteStep === 3) && (
+                            <div className="mt-8">
+                                <button
+                                    onClick={() => {
+                                        if (mode === 'website') {
+                                            if (websiteStep === 1) handleScanWebsite();
+                                            else if (websiteStep === 2) handleTrainWebsite();
+                                        } else {
+                                            handleUpload();
+                                        }
+                                    }}
+                                    disabled={
+                                        status === 'uploading' || status === 'training' || status === 'scanning' ||
+                                        (mode === 'file' && !file) ||
+                                        (mode === 'url' && !url) ||
+                                        (mode === 'website' && websiteStep === 1 && !websiteUrl) ||
+                                        (mode === 'website' && websiteStep === 2 && selectedUrls.size === 0)
+                                    }
+                                    className="w-full py-4 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 active:scale-[0.99]"
+                                >
+                                    {status === 'scanning' ? (
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                    ) : status === 'uploading' || status === 'training' ? (
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                    ) : mode === 'website' && websiteStep === 1 ? (
+                                        <Search className="w-5 h-5" />
+                                    ) : mode === 'website' && websiteStep === 2 ? (
+                                        <Check className="w-5 h-5" />
+                                    ) : mode === 'file' ? (
+                                        <UploadIcon className="w-5 h-5" />
+                                    ) : (
+                                        <Globe className="w-5 h-5" />
+                                    )}
+                                    <span className="text-lg">
+                                        {status === 'scanning' && 'Scanning...'}
+                                        {status === 'idle' && mode === 'website' && websiteStep === 1 && 'Scan Website'}
+                                        {status === 'idle' && mode === 'website' && websiteStep === 2 && `Import ${selectedUrls.size} Pages`}
+                                        {status === 'idle' && mode === 'file' && 'Upload and Train'}
+                                        {status === 'idle' && mode === 'url' && 'Import URL'}
+                                        {(status === 'uploading' || status === 'training') && mode !== 'website' && (mode === 'file' ? 'Uploading...' : 'Importing...')}
+                                        {status === 'success' && 'Success!'}
+                                        {status === 'error' && 'Try Again'}
+                                    </span>
+                                </button>
+                            </div>
+                        )}
 
                         {/* Status Messages */}
                         {status === 'success' && (
