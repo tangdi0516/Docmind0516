@@ -330,13 +330,9 @@ async def scan_website(request: Request, scan_request: ScanWebsiteRequest):
         from website_crawler import crawl_website
         
         # Crawl the website and discover URLs
-        discovered_urls = crawl_website(scan_request.url, max_pages=100)
+        result = crawl_website(scan_request.url, max_pages=3000)
         
-        return {
-            "base_url": scan_request.url,
-            "discovered_urls": discovered_urls,
-            "count": len(discovered_urls)
-        }
+        return result
     except Exception as e:
         print(f"Error in scan_website: {e}")
         raise HTTPException(status_code=500, detail=str(e))

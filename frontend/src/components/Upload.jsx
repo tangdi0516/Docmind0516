@@ -12,7 +12,9 @@ const Upload = () => {
     const [url, setUrl] = useState('');
     const [websiteUrl, setWebsiteUrl] = useState('');
     const [discoveredUrls, setDiscoveredUrls] = useState([]);
+    const [urlGroups, setUrlGroups] = useState([]);
     const [selectedUrls, setSelectedUrls] = useState(new Set());
+    const [expandedGroups, setExpandedGroups] = useState(new Set());
     const [websiteStep, setWebsiteStep] = useState(1); // 1: input, 2: select pages, 3: importing
     const [status, setStatus] = useState('idle'); // idle, uploading, training, success, error, scanning
     const [message, setMessage] = useState('');
@@ -41,7 +43,9 @@ const Upload = () => {
                 { headers: { 'user-id': user.id } }
             );
 
-            setDiscoveredUrls(response.data.discovered_urls);
+            setUrlGroups(response.data.groups);
+            setDiscoveredUrls(response.data.all_urls);
+            setExpandedGroups(new Set([response.data.groups[0]?.name])); // Expand first group by default
             setWebsiteStep(2);
             setStatus('idle');
             setMessage('');
@@ -58,6 +62,29 @@ const Upload = () => {
         } else {
             setSelectedUrls(new Set(discoveredUrls));
         }
+    };
+
+    const handleToggleGroup = (groupName) => {
+        const newExpanded = new Set(expandedGroups);
+        if (newExpanded.has(groupName)) {
+            newExpanded.delete(groupName);
+        } else {
+            newExpanded.add(groupName);
+        }
+        setExpandedGroups(newExpanded);
+    };
+
+    const handleSelectGroup = (group) => {
+        const groupUrls = group.urls;
+        const allSelected = groupUrls.every(url => selectedUrls.has(url));
+
+        const newSelected = new Set(selectedUrls);
+        if (allSelected) {
+            groupUrls.forEach(url => newSelected.delete(url));
+        } else {
+            groupUrls.forEach(url => newSelected.add(url));
+        }
+        setSelectedUrls(newSelected);
     };
 
     const handleToggleUrl = (url) => {
@@ -226,7 +253,7 @@ const Upload = () => {
                                         type="file"
                                         onChange={handleFileChange}
                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                        accept=".pdf,.txt,.md"
+                                        accept=".pdf,.txt,.md,.doc,.docx,.html,.htm,.eml,.zip,.csv,.tsv,.srt,.jpg,.jpeg,.png,.gif,.bmp,.svg,.xls,.xlsx,.ppt,.pptx"
                                     />
                                     <div className="flex flex-col items-center pointer-events-none">
                                         <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all ${file ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400 group-hover:scale-110 group-hover:bg-indigo-50 group-hover:text-indigo-500'
@@ -237,7 +264,7 @@ const Upload = () => {
                                             {file ? file.name : 'Drop your file here'}
                                         </p>
                                         <p className="text-sm text-slate-400 mt-2">
-                                            Supports PDF, TXT, MD (Max 10MB)
+                                            Supports PDF, Word, Excel, PowerPoint, Text, HTML, MD, Images, CSV, and more
                                         </p>
                                     </div>
                                 </div>
@@ -304,20 +331,65 @@ const Upload = () => {
                                             </button>
                                         </div>
                                         <div className="border border-slate-200 rounded-xl max-h-96 overflow-y-auto">
-                                            {discoveredUrls.map((url, index) => (
-                                                <label
-                                                    key={index}
-                                                    className="flex items-center p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0"
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={selectedUrls.has(url)}
-                                                        onChange={() => handleToggleUrl(url)}
-                                                        className="mr-3 w-4 h-4 text-indigo-600 rounded"
-                                                    />
-                                                    <span className="text-sm text-slate-700 truncate flex-1">{url}</span>
-                                                </label>
-                                            ))}
+                                            {urlGroups.map((group, groupIndex) => {
+                                                const groupUrls = group.urls;
+                                                const allSelected = groupUrls.every(url => selectedUrls.has(url));
+                                                const someSelected = groupUrls.some(url => selectedUrls.has(url)) && !allSelected;
+                                                const isExpanded = expandedGroups.has(group.name);
+
+                                                return (
+                                                    <div key={groupIndex} className="border-b border-slate-100 last:border-b-0">
+                                                        {/* Group Header */}
+                                                        <div className="flex items-center p-3 bg-slate-50 hover:bg-slate-100 transition-colors">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={allSelected}
+                                                                ref={input => {
+                                                                    if (input) input.indeterminate = someSelected;
+                                                                }}
+                                                                onChange={() => handleSelectGroup(group)}
+                                                                className="mr-3 w-4 h-4 text-indigo-600 rounded"
+                                                            />
+                                                            <button
+                                                                onClick={() => handleToggleGroup(group.name)}
+                                                                className="flex-1 flex items-center justify-between text-left"
+                                                            >
+                                                                <span className="font-medium text-slate-900">
+                                                                    {group.name} ({group.count} pages)
+                                                                </span>
+                                                                <svg
+                                                                    className={`w-4 h-4 text-slate-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    viewBox="0 0 24 24"
+                                                                >
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+
+                                                        {/* Group URLs */}
+                                                        {isExpanded && (
+                                                            <div className="bg-white">
+                                                                {groupUrls.map((url, urlIndex) => (
+                                                                    <label
+                                                                        key={urlIndex}
+                                                                        className="flex items-center p-3 pl-10 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0"
+                                                                    >
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            checked={selectedUrls.has(url)}
+                                                                            onChange={() => handleToggleUrl(url)}
+                                                                            className="mr-3 w-4 h-4 text-indigo-600 rounded"
+                                                                        />
+                                                                        <span className="text-sm text-slate-700 truncate flex-1">{url}</span>
+                                                                    </label>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                         <button
                                             onClick={() => setWebsiteStep(1)}

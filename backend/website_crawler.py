@@ -1,18 +1,19 @@
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
-from typing import Set, List
+from typing import Set, List, Dict
+from collections import defaultdict
 
-def crawl_website(base_url: str, max_pages: int = 50) -> List[str]:
+def crawl_website(base_url: str, max_pages: int = 3000) -> Dict:
     """
     Crawl a website starting from base_url and discover all internal pages.
     
     Args:
         base_url: The starting URL to crawl
-        max_pages: Maximum number of pages to discover (default 50)
+        max_pages: Maximum number of pages to discover (default 3000)
     
     Returns:
-        List of discovered URLs
+        Dictionary with discovered URLs organized by groups
     """
     # Normalize base URL
     if not base_url.startswith(('http://', 'https://')):
@@ -91,4 +92,40 @@ def crawl_website(base_url: str, max_pages: int = 50) -> List[str]:
             print(f"Error crawling {current_url}: {e}")
             continue
     
-    return sorted(list(discovered_urls))
+    # Group URLs by path segments
+    url_groups = defaultdict(list)
+    
+    for url in discovered_urls:
+        parsed = urlparse(url)
+        path = parsed.path.strip('/')
+        
+        if not path:
+            # Root URL
+            url_groups['Main'].append(url)
+        else:
+            # Get first path segment as group name
+            first_segment = path.split('/')[0]
+            group_name = first_segment.replace('-', ' ').title()
+            url_groups[group_name].append(url)
+    
+    # Sort URLs within each group
+    for group in url_groups:
+        url_groups[group].sort()
+    
+    # Convert to list of groups with metadata
+    grouped_data = []
+    for group_name in sorted(url_groups.keys()):
+        urls = url_groups[group_name]
+        grouped_data.append({
+            'name': group_name,
+            'count': len(urls),
+            'urls': urls
+        })
+    
+    return {
+        'base_url': base_url,
+        'total_count': len(discovered_urls),
+        'groups': grouped_data,
+        'all_urls': sorted(list(discovered_urls))
+    }
+
