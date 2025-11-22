@@ -19,23 +19,25 @@ USER_AGENTS = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 ]
 
-async def crawl_website(base_url: str, max_pages: int = 3000, max_time: int = 120) -> Dict:
+async def crawl_website(base_url: str, max_pages=500, max_time=120):
     """
-    Professional Website Crawler with Triple Fallback Strategy:
-    1. Sitemap (Fastest, most reliable for structured sites)
-    2. Playwright (Best for JS-heavy sites, but resource intensive)
-    3. Requests BFS (Fallback for when Playwright fails in restricted envs)
+    Crawl a website and return discovered URLs in a tree structure.
+    This uses a multi-phase approach:
+    1. Try sitemap.xml
+    2. (Playwright disabled by default on Railway)
+    3. Fallback to requests-based BFS
     """
-    start_time = time.time()
     debug_logs = []
+    start_time = time.time()
+    
+    # Normalize URL - add https:// if missing
+    if not base_url.startswith(('http://', 'https://')):
+        base_url = 'https://' + base_url
+        debug_logs.append(f"Auto-added https:// prefix. Final URL: {base_url}")
     
     try:
-        if not base_url.startswith(('http://', 'https://')):
-            base_url = 'https://' + base_url
-        
-        parsed_base = urlparse(base_url)
-        base_domain = parsed_base.netloc
-        
+        parsed = urlparse(base_url)
+        base_domain = parsed.netloc
         discovered_urls: Set[str] = set()
         
         debug_logs.append(f"Starting scan for {base_domain}")
