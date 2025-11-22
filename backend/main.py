@@ -213,28 +213,49 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.post("/upload/logo")
 async def upload_logo(request: Request, file: UploadFile = File(...)):
+    """
+    Upload logo to Supabase Storage for persistent storage.
+    Returns a public URL that persists across Railway deployments.
+    """
     try:
         user_id = request.headers.get("user-id")
         if not user_id:
             raise HTTPException(status_code=400, detail="user-id header is required")
         
-        # Generate a unique filename
+        # Read file contents
+        file_contents = await file.read()
+        
+        # Generate unique filename
         import uuid
         file_extension = os.path.splitext(file.filename)[1]
-        filename = f"{uuid.uuid4()}{file_extension}"
-        file_path = f"static/logos/{filename}"
+        unique_filename = f"logos/{user_id}/{uuid.uuid4()}{file_extension}"
         
-        with open(file_path, "wb") as f:
-            f.write(await file.read())
-            
-        # Return the full URL
-        base_url = str(request.base_url).rstrip("/")
-        logo_url = f"{base_url}/{file_path}"
+        # Upload to Supabase Storage
+        from supabase import create_client, Client
+        supabase_url = os.getenv("SUPABASE_URL")
+        supabase_key = os.getenv("SUPABASE_KEY")
         
-        return {"url": logo_url}
+        if not supabase_url or not supabase_key:
+            raise HTTPException(status_code=500, detail="Supabase not configured")
+        
+        supabase: Client = create_client(supabase_url, supabase_key)
+        
+        # Upload file (bucket name: 'widget-assets')
+        response = supabase.storage.from_('widget-assets').upload(
+            unique_filename,
+            file_contents,
+            file_options={"content-type": file.content_type}
+        )
+        
+        # Get public URL
+        public_url = supabase.storage.from_('widget-assets').get_public_url(unique_filename)
+        
+        return {"url": public_url}
+        
     except Exception as e:
         print(f"Error in upload_logo: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
 
 # --- New Endpoints for Logs and Team ---
 
