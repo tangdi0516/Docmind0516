@@ -154,9 +154,22 @@ const Upload = () => {
 
             clearTimeout(timeoutId);
 
+            // Handle graceful error response from backend
+            if (response.data.error) {
+                setStatus('error');
+                setMessage(`Scan failed: ${response.data.error}`);
+                if (response.data.debug_logs) {
+                    console.error("Backend Debug Logs:", response.data.debug_logs);
+                }
+                return;
+            }
+
             if (response.data.total_count === 0) {
                 setStatus('error');
                 setMessage('No pages found. Please check the URL or try a different site.');
+                if (response.data.debug_logs) {
+                    console.error("Backend Debug Logs:", response.data.debug_logs);
+                }
                 return;
             }
 

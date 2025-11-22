@@ -353,12 +353,61 @@ async def scan_website(request: Request, scan_request: ScanWebsiteRequest):
         from website_crawler import crawl_website
         
         # Crawl the website and discover URLs (90s timeout to leave buffer for response)
-        result = await crawl_website(scan_request.url, max_pages=1000, max_time=90)
-        
-        return result
+        # We wrap this in a broad try/except to ensure we return a JSON error, not a 500
+        try:
+            result = await crawl_website(scan_request.url, max_pages=1000, max_time=90)
+            return result
+        except Exception as crawler_error:
+            import traceback
+            traceback.print_exc()
+            return {
+                "base_url": scan_request.url,
+                "total_count": 0,
+                "tree": None,
+                "error": str(crawler_error),
+                "debug_logs": [f"Crawler crashed: {str(crawler_error)}"]
+            }
+
     except Exception as e:
         print(f"Error in scan_website: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Return a 200 OK with error details so frontend can display it gracefully
+        return JSONResponse(
+            status_code=200,
+            content={
+                "base_url": scan_request.url,
+                "total_count": 0,
+                "tree": None,
+                "error": str(e),
+                "debug_logs": [f"API Error: {str(e)}"]
+            }
+        )
+
+@app.get("/test-supabase")
+async def test_supabase():
+    """
+    Debug endpoint to verify Supabase connection.
+    """
+    try:
+        supabase_url = os.getenv("SUPABASE_URL")
+        supabase_key = os.getenv("SUPABASE_KEY")
+        
+        if not supabase_url:
+            return {"status": "error", "message": "SUPABASE_URL is missing"}
+        if not supabase_key:
+            return {"status": "error", "message": "SUPABASE_KEY is missing"}
+            
+        from supabase import create_client, Client
+        supabase: Client = create_client(supabase_url, supabase_key)
+        
+        # Try to list buckets to verify credentials
+        buckets = supabase.storage.list_buckets()
+        return {
+            "status": "ok", 
+            "message": "Connection successful", 
+            "buckets": [b.name for b in buckets]
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 class TrainWebsiteRequest(BaseModel):
     urls: List[str]
