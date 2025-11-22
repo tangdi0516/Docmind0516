@@ -59,11 +59,9 @@ const TreeItem = ({ node, selectedUrls, onToggle, level = 0 }) => {
                     ) : (
                         <FileText className="w-4 h-4 text-slate-400" />
                     )}
-                    <span className="text-sm font-medium text-slate-700 truncate">
-                        {node.name}
-                    </span>
-                    <span className="text-xs text-slate-400 ml-auto">
-                        {selectedCount} / {nodeUrls.length}
+                    <span className="text-sm text-slate-700 truncate">
+                        <span className="font-medium">{node.name}</span>
+                        {nodeUrls.length > 0 && <span className="font-semibold"> ({nodeUrls.length} {nodeUrls.length === 1 ? 'page' : 'pages'})</span>}
                     </span>
                 </div>
             </div>
@@ -295,7 +293,7 @@ const Upload = () => {
                     >
                         <div className="flex items-center justify-center gap-2">
                             <Globe className="w-4 h-4" />
-                            Website Crawl
+                            Website
                         </div>
                     </button>
                 </div>
@@ -360,10 +358,35 @@ const Upload = () => {
                     {/* Website Tab (The Main Feature) */}
                     {activeTab === 'website' && (
                         <div className="space-y-6">
+                            {/* Step Indicator */}
+                            <div className="flex items-center justify-center gap-2 mb-6">
+                                <div className="flex items-center gap-2">
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${websiteStep === 1 ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                                        1
+                                    </div>
+                                    <span className={`text-sm font-medium ${websiteStep === 1 ? 'text-slate-900' : 'text-slate-500'}`}>Scan Website</span>
+                                </div>
+                                <div className={`w-12 h-0.5 ${websiteStep >= 2 ? 'bg-indigo-600' : 'bg-slate-200'}`}></div>
+                                <div className="flex items-center gap-2">
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${websiteStep === 2 ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                                        2
+                                    </div>
+                                    <span className={`text-sm font-medium ${websiteStep === 2 ? 'text-slate-900' : 'text-slate-500'}`}>Select Pages</span>
+                                </div>
+                                <div className={`w-12 h-0.5 ${websiteStep >= 3 ? 'bg-indigo-600' : 'bg-slate-200'}`}></div>
+                                <div className="flex items-center gap-2">
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${websiteStep === 3 ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                                        3
+                                    </div>
+                                    <span className={`text-sm font-medium ${websiteStep === 3 ? 'text-slate-900' : 'text-slate-500'}`}>Settings</span>
+                                </div>
+                            </div>
+
+                            {/* Step 1: Scan Website */}
                             {websiteStep === 1 && (
                                 <>
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">Website URL</label>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">Website domain to scan</label>
                                         <div className="flex gap-3">
                                             <div className="relative flex-1">
                                                 <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -394,31 +417,32 @@ const Upload = () => {
                                                 )}
                                             </button>
                                         </div>
-                                        <p className="text-xs text-slate-400 mt-2">
-                                            We'll discover all accessible pages and let you choose which ones to index.
+                                        <p className="text-xs text-slate-500 mt-2">
+                                            Enter a website URL and we will scan the pages on the website. You can then select which pages or groups of pages to include in your bot.
                                         </p>
                                     </div>
                                 </>
                             )}
 
+                            {/* Step 2: Select Pages */}
                             {websiteStep === 2 && urlTree && (
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <h3 className="font-medium text-slate-900">Select Content</h3>
-                                            <p className="text-sm text-slate-500">
-                                                Found {totalFound} pages. Selected: {selectedUrls.size}
+                                            <h3 className="font-semibold text-slate-900">Select pages to index ({selectedUrls.size} selected)</h3>
+                                            <p className="text-sm text-slate-500 mt-1">
+                                                Free plan includes 25 pages
                                             </p>
                                         </div>
                                         <button
                                             onClick={() => setWebsiteStep(1)}
-                                            className="text-sm text-slate-500 hover:text-slate-900"
+                                            className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
                                         >
-                                            Cancel
+                                            ← Back to Scan
                                         </button>
                                     </div>
 
-                                    <div className="border border-slate-200 rounded-xl max-h-[400px] overflow-y-auto p-2 bg-white scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+                                    <div className="border border-slate-200 rounded-xl max-h-[400px] overflow-y-auto p-3 bg-slate-50/50 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
                                         <TreeItem
                                             node={urlTree}
                                             selectedUrls={selectedUrls}
