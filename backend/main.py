@@ -25,8 +25,8 @@ app.add_middleware(
 )
 
 @app.get("/version")
-async def version():
-    return {"version": "1.2.3", "deployed_at": "2025-11-22", "note": "cors-fix-test", "cors_enabled": True}
+def get_version():
+    return {"version": "1.2.4", "note": "Fixing Playwright & Indentation"}
 
 @app.get("/test-supabase")
 async def test_supabase():
