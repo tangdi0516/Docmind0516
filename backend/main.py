@@ -410,9 +410,25 @@ async def scan_website(request: Request, scan_request: ScanWebsiteRequest):
                 }
             )
         
-        from website_crawler import crawl_website
-        
         print(f"[API] Starting website scan for: {scan_request.url}")
+        
+        # Try to import crawler with error handling
+        try:
+            from website_crawler import crawl_website
+            print("[API] Crawler module imported successfully")
+        except Exception as import_error:
+            print(f"[API] CRITICAL: Failed to import website_crawler: {import_error}")
+            import traceback
+            traceback.print_exc()
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "base_url": scan_request.url,
+                    "total_count": 0,
+                    "tree": None,
+                    "error": f"Crawler module failed to load: {str(import_error)}"
+                }
+            )
         
         # Crawl the website with explicit error handling
         try:
