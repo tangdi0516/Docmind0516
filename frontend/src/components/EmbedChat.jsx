@@ -6,7 +6,7 @@ const EmbedChat = () => {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
-    const [botName, setBotName] = useState('DocMind');
+    const [botName, setBotName] = useState('DocMind Assistant');
     const [settings, setSettings] = useState({
         widget_color: '#4F46E5',
         header_logo: '',
@@ -47,7 +47,7 @@ const EmbedChat = () => {
         } catch (error) {
             console.error("Error fetching settings:", error);
             setMessages([
-                { role: 'assistant', content: 'Hello! I am DocMind. How can I help you today?' }
+                { role: 'assistant', content: 'Hello! I am DocMind Assistant. How can I help you today?' }
             ]);
         }
     };

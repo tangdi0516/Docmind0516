@@ -41,7 +41,7 @@ const WidgetChat = () => {
                 console.error('Error fetching settings:', error);
                 // Set default settings
                 setSettings({
-                    bot_name: 'Assistant',
+                    bot_name: 'DocMind Assistant',
                     widget_color: '#4F46E5',
                     header_logo: '',
                     initial_message: 'Hello! How can I help you today?'
