@@ -43,6 +43,21 @@ def crawl_website(base_url: str, max_pages: int = 3000, max_time: int = 120) -> 
         error_count = 0
         max_errors = 50  # Stop if too many errors
         
+        # First, test if the site is accessible
+        print(f"Testing connectivity to {base_url}...")
+        try:
+            test_response = requests.get(base_url, timeout=10, headers={
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            }, allow_redirects=True)
+            print(f"Initial test: Status {test_response.status_code}, Content-Type: {test_response.headers.get('Content-Type', 'unknown')}")
+            
+            if test_response.status_code == 403:
+                print("WARNING: Site returned 403 Forbidden. The site may block automated crawlers.")
+            elif test_response.status_code >= 400:
+                print(f"WARNING: Site returned status {test_response.status_code}")
+        except Exception as e:
+            print(f"WARNING: Initial connectivity test failed: {e}")
+        
         while to_visit and len(discovered_urls) < max_pages and error_count < max_errors:
             # Check time limit
             elapsed = time.time() - start_time
@@ -60,16 +75,33 @@ def crawl_website(base_url: str, max_pages: int = 3000, max_time: int = 120) -> 
                 # Add small delay to be polite (reduced from 0.1 to 0.05 for faster crawling)
                 time.sleep(0.05)
                 
-                # Fetch the page
-                response = requests.get(current_url, timeout=15, headers={
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                    'Accept-Language': 'en-US,en;q=0.5',
-                    'Accept-Encoding': 'gzip, deflate',
-                    'Connection': 'keep-alive',
-                })
+                # Create a session to maintain cookies and connection
+                session = requests.Session()
                 
-                if response.status_code != 200:
+                # Fetch the page with comprehensive browser-like headers
+                response = session.get(current_url, timeout=15, headers={
+                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'Connection': 'keep-alive',
+                    'Upgrade-Insecure-Requests': '1',
+                    'Sec-Fetch-Dest': 'document',
+                    'Sec-Fetch-Mode': 'navigate',
+                    'Sec-Fetch-Site': 'none',
+                    'Cache-Control': 'max-age=0',
+                    'DNT': '1',
+                }, allow_redirects=True, verify=True)
+                
+                if response.status_code == 403:
+                    print(f"Access forbidden (403) on {current_url} - site may block crawlers")
+                    error_count += 1
+                    continue
+                elif response.status_code == 503:
+                    print(f"Service unavailable (503) on {current_url}")
+                    error_count += 1
+                    continue
+                elif response.status_code != 200:
                     print(f"Skipping {current_url} (status {response.status_code})")
                     continue
                     
