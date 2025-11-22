@@ -3,6 +3,11 @@ from sqlalchemy import create_engine, Column, String, Integer, Text, JSON, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
+import socket
+from urllib.parse import urlparse, urlunparse
+
+# ... (imports remain the same)
+
 # Get Database URL from environment variable (Railway provides this automatically)
 # Fallback to local sqlite for development if not set (optional, but good for safety)
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -30,8 +35,41 @@ if DATABASE_URL:
         print("CRITICAL WARNING: DATABASE_URL is missing the '@' separator between password and host.")
         print("Please check your Railway 'DATABASE_URL' variable.")
         print("Format should be: postgresql://user:password@host:port/dbname")
-        # We won't raise here to allow for some edge cases (like local sqlite), 
-        # but for postgres it's almost certainly an error.
+
+    # FORCE IPv4: Resolve hostname to IPv4 to avoid "Network is unreachable" on IPv6
+    try:
+        # Parse the URL
+        parsed = urlparse(DATABASE_URL)
+        hostname = parsed.hostname
+        
+        # If we have a hostname and it's not already an IP address
+        if hostname and not hostname.replace('.', '').isnumeric() and ":" not in hostname:
+            print(f"DEBUG: Resolving hostname '{hostname}' to IPv4...")
+            ipv4_addr = socket.gethostbyname(hostname)
+            print(f"DEBUG: Resolved to IPv4: {ipv4_addr}")
+            
+            # Reconstruct the netloc with the IPv4 address
+            # netloc format: user:password@host:port
+            new_netloc = ""
+            if parsed.username:
+                new_netloc += parsed.username
+                if parsed.password:
+                    new_netloc += f":{parsed.password}"
+                new_netloc += "@"
+            
+            new_netloc += ipv4_addr
+            
+            if parsed.port:
+                new_netloc += f":{parsed.port}"
+            
+            # Update the URL
+            parsed = parsed._replace(netloc=new_netloc)
+            DATABASE_URL = urlunparse(parsed)
+            print("DEBUG: Updated DATABASE_URL to use IPv4 address.")
+            
+    except Exception as e:
+        print(f"WARNING: Failed to resolve IPv4 address: {e}")
+        # Continue with original URL if resolution fails
 
 if not DATABASE_URL:
     # Fallback for local dev without Postgres
