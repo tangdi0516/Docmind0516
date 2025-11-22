@@ -82,6 +82,36 @@ const WidgetGenerator = () => {
         }
     };
 
+    const handleRemoveLogo = async () => {
+        setSettings(prev => ({ ...prev, header_logo: '' }));
+
+        try {
+            setSaving(true);
+            // Fetch current settings to ensure we don't overwrite other fields
+            const currentSettingsRes = await axios.get(`${API_BASE_URL}/user/settings`, {
+                headers: { 'user-id': user.id }
+            });
+
+            await axios.post(`${API_BASE_URL}/user/settings`, {
+                ...currentSettingsRes.data,
+                widget_color: settings.widget_color,
+                header_logo: '', // Explicitly empty
+                initial_message: settings.initial_message
+            }, {
+                headers: { 'user-id': user.id }
+            });
+
+            // Force iframe refresh
+            setLastUpdated(Date.now());
+
+        } catch (error) {
+            console.error("Error removing logo:", error);
+            alert("Failed to remove logo");
+        } finally {
+            setSaving(false);
+        }
+    };
+
     const handleSaveSettings = async () => {
         try {
             setSaving(true);
@@ -178,16 +208,26 @@ const WidgetGenerator = () => {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-2">Header Logo URL</label>
-                                <input
-                                    type="text"
-                                    value={settings.header_logo}
-                                    onChange={(e) => setSettings({ ...settings, header_logo: e.target.value })}
-                                    placeholder="https://example.com/logo.png"
-                                    className="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-2.5 text-slate-900 focus:border-indigo-500 focus:ring-indigo-500/20 transition-all text-sm"
-                                />
-                                <p className="text-xs text-slate-500 mt-1">Leave empty to hide logo.</p>
-                                <div className="mt-2">
+                                <label className="block text-sm font-medium text-slate-700 mb-2">Header Logo</label>
+
+                                {settings.header_logo ? (
+                                    <div className="flex items-center gap-4 mb-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                        <div className="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center overflow-hidden shadow-sm">
+                                            <img src={settings.header_logo} alt="Logo Preview" className="w-full h-full object-cover" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-xs text-slate-500 mb-1 truncate max-w-[150px]">{settings.header_logo.split('/').pop()}</p>
+                                            <button
+                                                onClick={handleRemoveLogo}
+                                                className="text-xs text-red-600 hover:text-red-700 font-medium"
+                                            >
+                                                Remove Logo
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : null}
+
+                                <div>
                                     <label className="flex items-center justify-center w-full px-4 py-2 bg-white border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
                                         <Upload className="w-4 h-4 text-slate-500 mr-2" />
                                         <span className="text-sm text-slate-600">Upload Image</span>
@@ -198,6 +238,7 @@ const WidgetGenerator = () => {
                                             onChange={handleLogoUpload}
                                         />
                                     </label>
+                                    <p className="text-xs text-slate-500 mt-2 text-center">Recommended size: 64x64px</p>
                                 </div>
                             </div>
                             <div>
