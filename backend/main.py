@@ -396,40 +396,66 @@ class ScanWebsiteRequest(BaseModel):
 
 @app.post("/scan/website")
 async def scan_website(request: Request, scan_request: ScanWebsiteRequest):
+    """Scan a website and return discovered URLs in a tree structure."""
     try:
         user_id = request.headers.get("user-id")
         if not user_id:
-            raise HTTPException(status_code=400, detail="user-id header is required")
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "base_url": scan_request.url,
+                    "total_count": 0,
+                    "tree": None,
+                    "error": "user-id header is required"
+                }
+            )
         
         from website_crawler import crawl_website
         
-        # Crawl the website and discover URLs (90s timeout to leave buffer for response)
-        # We wrap this in a broad try/except to ensure we return a JSON error, not a 500
+        print(f"[API] Starting website scan for: {scan_request.url}")
+        
+        # Crawl the website with explicit error handling
         try:
             result = await crawl_website(scan_request.url, max_pages=1000, max_time=90)
-            return result
+            print(f"[API] Scan completed. Total count: {result.get('total_count', 0)}")
+            
+            # Always return 200 OK with result (even if crawler found 0 pages)
+            return JSONResponse(
+                status_code=200,
+                content=result
+            )
+            
         except Exception as crawler_error:
+            print(f"[API] Crawler exception: {str(crawler_error)}")
             import traceback
             traceback.print_exc()
-            return {
-                "base_url": scan_request.url,
-                "total_count": 0,
-                "tree": None,
-                "error": str(crawler_error),
-                "debug_logs": [f"Crawler crashed: {str(crawler_error)}"]
-            }
+            
+            # Return 200 OK with error details (not a 500)
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "base_url": scan_request.url,
+                    "total_count": 0,
+                    "tree": None,
+                    "error": f"Crawler failed: {str(crawler_error)}",
+                    "debug_logs": [f"Exception: {str(crawler_error)}"]
+                }
+            )
 
     except Exception as e:
-        print(f"Error in scan_website: {e}")
-        # Return a 200 OK with error details so frontend can display it gracefully
+        print(f"[API] Endpoint exception: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        # Always return 200 OK (never 500), frontend will check for error field
         return JSONResponse(
             status_code=200,
             content={
-                "base_url": scan_request.url,
+                "base_url": getattr(scan_request, 'url', 'unknown'),
                 "total_count": 0,
                 "tree": None,
-                "error": str(e),
-                "debug_logs": [f"API Error: {str(e)}"]
+                "error": f"API error: {str(e)}",
+                "debug_logs": [f"Fatal error: {str(e)}"]
             }
         )
 
