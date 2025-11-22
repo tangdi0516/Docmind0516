@@ -272,7 +272,20 @@ async def upload_logo(request: Request, file: UploadFile = File(...)):
         supabase: Client = create_client(supabase_url, supabase_key)
         
         # Upload file (bucket name: 'widget-assets')
-        response = supabase.storage.from_('widget-assets').upload(
+        bucket_name = 'widget-assets'
+        
+        # Check if bucket exists, if not create it (if permissions allow)
+        try:
+            buckets = supabase.storage.list_buckets()
+            bucket_names = [b.name for b in buckets]
+            if bucket_name not in bucket_names:
+                print(f"Bucket {bucket_name} not found. Attempting to create...")
+                supabase.storage.create_bucket(bucket_name, options={'public': True})
+        except Exception as bucket_error:
+            print(f"Bucket check/create warning: {bucket_error}")
+            # Continue anyway, maybe list_buckets is forbidden but upload works
+            
+        response = supabase.storage.from_(bucket_name).upload(
             unique_filename,
             file_contents,
             file_options={"content-type": file.content_type}
