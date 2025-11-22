@@ -22,7 +22,7 @@ function App() {
             <Routes>
                 {/* Public embed routes - always accessible */}
                 <Route path="/embed/:userId" element={<EmbedChat />} />
-                <Route path="/widget" element={<WidgetChat />} />
+                <Route path="/standalone-widget" element={<WidgetChat />} />
 
                 {/* Route for development/preview of Landing Page on any domain */}
                 <Route path="/landing" element={<LandingPage onLoginClick={() => window.location.href = getAppUrl()} />} />

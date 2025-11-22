@@ -4,7 +4,7 @@
     // Get configuration from script tag
     const script = document.currentScript;
     const ownerId = script.getAttribute('data-owner-id');
-    const widgetUrl = script.getAttribute('data-widget-url') || 'https://docmind-frontend-app.vercel.app/widget';
+    const widgetUrl = script.getAttribute('data-widget-url') || 'https://docmind-frontend-app.vercel.app/standalone-widget';
 
     if (!ownerId) {
         console.error('[DocMind Widget] Error: data-owner-id attribute is required');

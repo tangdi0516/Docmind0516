@@ -37,7 +37,7 @@ const WidgetGenerator = () => {
     host: "${baseUrl}"
   };
 </script>
-<script src="${baseUrl}/widget.js" async></script>`;
+<script src="${baseUrl}/loader.js" async></script>`;
 
     const handleCopy = (text, setCopied) => {
         navigator.clipboard.writeText(text);
