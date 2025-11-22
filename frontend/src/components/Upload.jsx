@@ -37,11 +37,26 @@ const Upload = () => {
         setMessage('Scanning website for pages...');
 
         try {
+            // Create abort controller for timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+
             const response = await axios.post(
                 `${API_BASE_URL}/scan/website`,
                 { url: websiteUrl },
-                { headers: { 'user-id': user.id } }
+                {
+                    headers: { 'user-id': user.id },
+                    signal: controller.signal
+                }
             );
+
+            clearTimeout(timeoutId);
+
+            if (response.data.total_count === 0) {
+                setStatus('error');
+                setMessage('No pages found. The website might be blocking our crawler or the URL is invalid.');
+                return;
+            }
 
             setUrlGroups(response.data.groups);
             setDiscoveredUrls(response.data.all_urls);
@@ -51,8 +66,13 @@ const Upload = () => {
             setMessage('');
         } catch (error) {
             console.error(error);
-            setStatus('error');
-            setMessage('Failed to scan website. Please check the URL and try again.');
+            if (error.code === 'ECONNABORTED' || error.name === 'AbortError') {
+                setStatus('error');
+                setMessage('Scan timed out. The website might be too large. Try a more specific URL or contact support.');
+            } else {
+                setStatus('error');
+                setMessage('Failed to scan website. Please check the URL and try again.');
+            }
         }
     };
 

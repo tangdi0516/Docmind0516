@@ -329,8 +329,8 @@ async def scan_website(request: Request, scan_request: ScanWebsiteRequest):
         
         from website_crawler import crawl_website
         
-        # Crawl the website and discover URLs
-        result = crawl_website(scan_request.url, max_pages=3000)
+        # Crawl the website and discover URLs (90s timeout to leave buffer for response)
+        result = crawl_website(scan_request.url, max_pages=1000, max_time=90)
         
         return result
     except Exception as e:

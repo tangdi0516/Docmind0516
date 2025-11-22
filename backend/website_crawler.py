@@ -5,7 +5,7 @@ from typing import Set, List, Dict
 from collections import defaultdict, deque
 import time
 
-def crawl_website(base_url: str, max_pages: int = 3000) -> Dict:
+def crawl_website(base_url: str, max_pages: int = 3000, max_time: int = 120) -> Dict:
     """
     Crawl a website starting from base_url and discover all internal pages.
     Uses BFS (breadth-first search) to ensure deep crawling of all levels.
@@ -13,11 +13,14 @@ def crawl_website(base_url: str, max_pages: int = 3000) -> Dict:
     Args:
         base_url: The starting URL to crawl
         max_pages: Maximum number of pages to discover (default 3000)
+        max_time: Maximum time in seconds to crawl (default 120s = 2 minutes)
     
     Returns:
         Dictionary with discovered URLs organized by groups
     """
     try:
+        start_time = time.time()
+        
         # Normalize base URL
         if not base_url.startswith(('http://', 'https://')):
             base_url = 'https://' + base_url
@@ -34,13 +37,18 @@ def crawl_website(base_url: str, max_pages: int = 3000) -> Dict:
         to_visit = deque([base_url])  # Changed from set to deque for BFS
         visited: Set[str] = set()
         
-        print(f"Starting crawl of {base_url} (max {max_pages} pages)")
+        print(f"Starting crawl of {base_url} (max {max_pages} pages, {max_time}s timeout)")
         print(f"Base domain: {base_domain}")
         
         error_count = 0
         max_errors = 50  # Stop if too many errors
         
         while to_visit and len(discovered_urls) < max_pages and error_count < max_errors:
+            # Check time limit
+            elapsed = time.time() - start_time
+            if elapsed > max_time:
+                print(f"Time limit reached ({elapsed:.1f}s). Stopping crawl with {len(discovered_urls)} pages.")
+                break
             current_url = to_visit.popleft()  # BFS: take from front of queue
             
             if current_url in visited:
@@ -49,8 +57,8 @@ def crawl_website(base_url: str, max_pages: int = 3000) -> Dict:
             visited.add(current_url)
             
             try:
-                # Add small delay to be polite
-                time.sleep(0.1)
+                # Add small delay to be polite (reduced from 0.1 to 0.05 for faster crawling)
+                time.sleep(0.05)
                 
                 # Fetch the page
                 response = requests.get(current_url, timeout=15, headers={
