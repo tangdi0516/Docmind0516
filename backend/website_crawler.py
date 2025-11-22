@@ -74,55 +74,56 @@ async def crawl_website(base_url: str, max_pages: int = 3000, max_time: int = 12
             debug_logs.append(f"Sitemap error: {str(e)}")
 
         # --- Phase 2: Playwright Deep Scan ---
-        # Only if Sitemap yielded few results
-        if len(discovered_urls) < 5:
-            debug_logs.append("Sitemap yielded low results. Attempting Playwright...")
-            try:
-                async with async_playwright() as p:
-                    browser = await p.chromium.launch(headless=True, args=['--no-sandbox', '--disable-setuid-sandbox'])
-                    context = await browser.new_context(
-                        user_agent=random.choice(USER_AGENTS),
-                        viewport={'width': 1440, 'height': 900}
-                    )
-                    page = await context.new_page()
-                    if stealth_async: await stealth_async(page)
-                    
-                    visited = set()
-                    to_visit = [base_url]
-                    
-                    while to_visit and len(discovered_urls) < max_pages:
-                        if time.time() - start_time > max_time: break
-                        
-                        url = to_visit.pop(0)
-                        if url in visited: continue
-                        visited.add(url)
-                        
-                        try:
-                            resp = await page.goto(url, timeout=15000, wait_until='domcontentloaded')
-                            if resp and resp.status == 200:
-                                discovered_urls.add(url)
-                                
-                                # Extract links
-                                links = await page.evaluate("""
-                                    () => Array.from(document.querySelectorAll('a[href]'))
-                                        .map(a => a.href)
-                                        .filter(href => href.startsWith('http'))
-                                """)
-                                
-                                for link in links:
-                                    parsed = urlparse(link)
-                                    if parsed.netloc == base_domain:
-                                        clean = link.split('#')[0]
-                                        if clean not in visited and clean not in discovered_urls and clean not in to_visit:
-                                            to_visit.append(clean)
-                        except Exception:
-                            continue
-                    
-                    await browser.close()
-                    debug_logs.append(f"Playwright found {len(discovered_urls)} URLs")
-            except Exception as e:
-                debug_logs.append(f"Playwright failed: {str(e)}")
-                # Fallback to Phase 3 will happen next
+        # DISABLED BY DEFAULT TO PREVENT CRASHES ON RAILWAY
+        # Only enable if you have sufficient RAM (2GB+)
+        # if len(discovered_urls) < 5:
+        #     debug_logs.append("Sitemap yielded low results. Attempting Playwright...")
+        #     try:
+        #         async with async_playwright() as p:
+        #             browser = await p.chromium.launch(headless=True, args=['--no-sandbox', '--disable-setuid-sandbox'])
+        #             context = await browser.new_context(
+        #                 user_agent=random.choice(USER_AGENTS),
+        #                 viewport={'width': 1440, 'height': 900}
+        #             )
+        #             page = await context.new_page()
+        #             if stealth_async: await stealth_async(page)
+        #             
+        #             visited = set()
+        #             to_visit = [base_url]
+        #             
+        #             while to_visit and len(discovered_urls) < max_pages:
+        #                 if time.time() - start_time > max_time: break
+        #                 
+        #                 url = to_visit.pop(0)
+        #                 if url in visited: continue
+        #                 visited.add(url)
+        #                 
+        #                 try:
+        #                     resp = await page.goto(url, timeout=15000, wait_until='domcontentloaded')
+        #                     if resp and resp.status == 200:
+        #                         discovered_urls.add(url)
+        #                         
+        #                         # Extract links
+        #                         links = await page.evaluate("""
+        #                             () => Array.from(document.querySelectorAll('a[href]'))
+        #                                 .map(a => a.href)
+        #                                 .filter(href => href.startsWith('http'))
+        #                         """)
+        #                         
+        #                         for link in links:
+        #                             parsed = urlparse(link)
+        #                             if parsed.netloc == base_domain:
+        #                                 clean = link.split('#')[0]
+        #                                 if clean not in visited and clean not in discovered_urls and clean not in to_visit:
+        #                                     to_visit.append(clean)
+        #                 except Exception:
+        #                     continue
+        #             
+        #             await browser.close()
+        #             debug_logs.append(f"Playwright found {len(discovered_urls)} URLs")
+        #     except Exception as e:
+        #         debug_logs.append(f"Playwright failed: {str(e)}")
+        #         # Fallback to Phase 3 will happen next
 
         # --- Phase 3: Requests BFS (Fallback) ---
         # If we still have very few URLs (meaning Playwright failed or site is JS-heavy but Playwright crashed)

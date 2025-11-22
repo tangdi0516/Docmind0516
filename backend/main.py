@@ -25,7 +25,34 @@ app.add_middleware(
 
 @app.get("/version")
 async def version():
-    return {"version": "1.2.0", "deployed_at": "2025-11-22"}
+    return {"version": "1.2.1", "deployed_at": "2025-11-22", "note": "debug-update"}
+
+@app.get("/test-supabase")
+async def test_supabase():
+    """
+    Debug endpoint to verify Supabase connection.
+    """
+    try:
+        supabase_url = os.getenv("SUPABASE_URL")
+        supabase_key = os.getenv("SUPABASE_KEY")
+        
+        if not supabase_url:
+            return {"status": "error", "message": "SUPABASE_URL is missing"}
+        if not supabase_key:
+            return {"status": "error", "message": "SUPABASE_KEY is missing"}
+            
+        from supabase import create_client, Client
+        supabase: Client = create_client(supabase_url, supabase_key)
+        
+        # Try to list buckets to verify credentials
+        buckets = supabase.storage.list_buckets()
+        return {
+            "status": "ok", 
+            "message": "Connection successful", 
+            "buckets": [b.name for b in buckets]
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 
 # Initialize Database Tables
@@ -386,32 +413,6 @@ async def scan_website(request: Request, scan_request: ScanWebsiteRequest):
             }
         )
 
-@app.get("/test-supabase")
-async def test_supabase():
-    """
-    Debug endpoint to verify Supabase connection.
-    """
-    try:
-        supabase_url = os.getenv("SUPABASE_URL")
-        supabase_key = os.getenv("SUPABASE_KEY")
-        
-        if not supabase_url:
-            return {"status": "error", "message": "SUPABASE_URL is missing"}
-        if not supabase_key:
-            return {"status": "error", "message": "SUPABASE_KEY is missing"}
-            
-        from supabase import create_client, Client
-        supabase: Client = create_client(supabase_url, supabase_key)
-        
-        # Try to list buckets to verify credentials
-        buckets = supabase.storage.list_buckets()
-        return {
-            "status": "ok", 
-            "message": "Connection successful", 
-            "buckets": [b.name for b in buckets]
-        }
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
 
 class TrainWebsiteRequest(BaseModel):
     urls: List[str]
