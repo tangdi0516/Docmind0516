@@ -94,9 +94,10 @@ async def crawl_website(base_url: str, max_pages=500, max_time=120):
                         headless=True,
                         args=['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
                     )
+                    ua = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
                     context = await browser.new_context(
-                        user_agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                        viewport={'width': 1920, 'height': 1080'},
+                        user_agent=ua,
+                        viewport={'width': 1920, 'height': 1080},
                         locale='en-US'
                     )
                     page = await context.new_page()
