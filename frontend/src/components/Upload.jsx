@@ -122,6 +122,10 @@ const Upload = () => {
     const [selectedUrls, setSelectedUrls] = useState(new Set());
     const [totalFound, setTotalFound] = useState(0);
 
+    // Manual URL input
+    const [showManualInput, setShowManualInput] = useState(false);
+    const [manualUrls, setManualUrls] = useState('');
+
     // Refresh trigger for KnowledgeList
     const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -195,6 +199,69 @@ const Upload = () => {
             console.error(error);
             setStatus('error');
             setMessage(error.message || 'Failed to scan website');
+        }
+    };
+
+    const handleParseManualUrls = async () => {
+        if (!manualUrls.trim()) return;
+        setStatus('scanning');
+        setMessage('Parsing URLs...');
+
+        try {
+            // Parse URLs from textarea (one per line)
+            const urls = manualUrls
+                .split('\n')
+                .map(u => u.trim())
+                .filter(u => u.length > 0);
+
+            if (urls.length === 0) {
+                setStatus('error');
+                setMessage('Please enter at least one URL');
+                return;
+            }
+
+            const response = await axios.post(`${API_BASE_URL}/parse/urls`, {
+                urls: urls,
+                base_url: websiteUrl || urls[0]
+            }, {
+                headers: {
+                    'user-id': user.id
+                }
+            });
+
+            if (response.data.error) {
+                setStatus('error');
+                setMessage(`Parse failed: ${response.data.error}`);
+                return;
+            }
+
+            if (response.data.total_count === 0) {
+                setStatus('error');
+                setMessage('No valid URLs found');
+                return;
+            }
+
+            setUrlTree(response.data.tree);
+            setTotalFound(response.data.total_count);
+
+            // Auto-select all URLs
+            const allUrls = new Set();
+            const collectUrls = (node) => {
+                node.urls.forEach(u => allUrls.add(u.url));
+                node.children.forEach(child => collectUrls(child));
+            };
+            if (response.data.tree) {
+                collectUrls(response.data.tree);
+            }
+            setSelectedUrls(allUrls);
+
+            setWebsiteStep(2);
+            setStatus('idle');
+            setMessage('');
+        } catch (error) {
+            console.error(error);
+            setStatus('error');
+            setMessage(error.message || 'Failed to parse URLs');
         }
     };
 
@@ -389,40 +456,84 @@ const Upload = () => {
                             {websiteStep === 1 && (
                                 <>
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">Website domain to scan</label>
-                                        <div className="flex gap-3">
-                                            <div className="relative flex-1">
-                                                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                                                <input
-                                                    type="text"
-                                                    value={websiteUrl}
-                                                    onChange={(e) => setWebsiteUrl(e.target.value)}
-                                                    placeholder="https://example.com"
-                                                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
-                                                    onKeyDown={(e) => e.key === 'Enter' && handleScanWebsite()}
-                                                />
-                                            </div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <label className="block text-sm font-medium text-slate-700">Website domain to scan</label>
                                             <button
-                                                onClick={handleScanWebsite}
-                                                disabled={status === 'scanning' || !websiteUrl}
-                                                className="px-6 py-2.5 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-all flex items-center gap-2"
+                                                onClick={() => setShowManualInput(!showManualInput)}
+                                                className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
                                             >
-                                                {status === 'scanning' ? (
-                                                    <>
-                                                        <Loader2 className="w-5 h-5 animate-spin" />
-                                                        Scanning...
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Search className="w-5 h-5" />
-                                                        Scan
-                                                    </>
-                                                )}
+                                                {showManualInput ? '← Auto Scan' : 'Manual Input →'}
                                             </button>
                                         </div>
-                                        <p className="text-xs text-slate-500 mt-2">
-                                            Enter a website URL and we will scan the pages on the website. You can then select which pages or groups of pages to include in your bot.
-                                        </p>
+
+                                        {!showManualInput ? (
+                                            <>
+                                                <div className="flex gap-3">
+                                                    <div className="relative flex-1">
+                                                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                                        <input
+                                                            type="text"
+                                                            value={websiteUrl}
+                                                            onChange={(e) => setWebsiteUrl(e.target.value)}
+                                                            placeholder="https://example.com"
+                                                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
+                                                            onKeyDown={(e) => e.key === 'Enter' && handleScanWebsite()}
+                                                        />
+                                                    </div>
+                                                    <button
+                                                        onClick={handleScanWebsite}
+                                                        disabled={status === 'scanning' || !websiteUrl}
+                                                        className="px-6 py-2.5 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-all flex items-center gap-2"
+                                                    >
+                                                        {status === 'scanning' ? (
+                                                            <>
+                                                                <Loader2 className="w-5 h-5 animate-spin" />
+                                                                Scanning...
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Search className="w-5 h-5" />
+                                                                Scan
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                </div>
+                                                <p className="text-xs text-slate-500 mt-2">
+                                                    Enter a website URL and we will scan the pages on the website. You can then select which pages or groups of pages to include in your bot.
+                                                </p>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <textarea
+                                                    value={manualUrls}
+                                                    onChange={(e) => setManualUrls(e.target.value)}
+                                                    placeholder="Enter URLs (one per line)&#10;https://example.com/page1&#10;https://example.com/page2&#10;https://example.com/page3"
+                                                    className="w-full h-40 px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none font-mono text-sm resize-none"
+                                                />
+                                                <div className="flex gap-3 mt-3">
+                                                    <button
+                                                        onClick={handleParseManualUrls}
+                                                        disabled={status === 'scanning' || !manualUrls.trim()}
+                                                        className="flex-1 py-2.5 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                                                    >
+                                                        {status === 'scanning' ? (
+                                                            <>
+                                                                <Loader2 className="w-5 h-5 animate-spin" />
+                                                                Parsing...
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Check className="w-5 h-5" />
+                                                                Parse URLs
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                </div>
+                                                <p className="text-xs text-slate-500 mt-2">
+                                                    Paste your URLs directly (one per line). Useful when automatic scanning fails due to website protection.
+                                                </p>
+                                            </>
+                                        )}
                                     </div>
                                 </>
                             )}

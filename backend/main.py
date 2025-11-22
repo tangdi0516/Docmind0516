@@ -463,9 +463,6 @@ async def scan_website(request: Request, scan_request: ScanWebsiteRequest):
         print(f"[API] Endpoint exception: {e}")
         import traceback
         traceback.print_exc()
-        
-        # Always return 200 OK (never 500), frontend will check for error field
-        return JSONResponse(
             status_code=200,
             content={
                 "base_url": getattr(scan_request, 'url', 'unknown'),
@@ -473,6 +470,77 @@ async def scan_website(request: Request, scan_request: ScanWebsiteRequest):
                 "tree": None,
                 "error": f"API error: {str(e)}",
                 "debug_logs": [f"Fatal error: {str(e)}"]
+            }
+        )
+
+
+class ManualURLRequest(BaseModel):
+    urls: List[str]
+    base_url: Optional[str] = None
+
+@app.post("/parse/urls")
+async def parse_urls(request: ManualURLRequest, user_id: str = Depends(lambda r: r.headers.get("user-id"))):
+    """
+    Parse a list of manually provided URLs and return the same tree structure as /scan/website.
+    Useful when automatic crawling fails due to anti-bot protection.
+    """
+    try:
+        print(f"[API] Parsing {len(request.urls)} manual URLs")
+        
+        from urllib.parse import urlparse
+        from website_crawler import _build_url_tree
+        
+        # Normalize and validate URLs
+        valid_urls = set()
+        base_domain = None
+        
+        for url in request.urls:
+            url = url.strip()
+            if not url:
+                continue
+                
+            # Add https:// if missing
+            if not url.startswith(('http://', 'https://')):
+                url = 'https://' + url
+            
+            try:
+                parsed = urlparse(url)
+                if parsed.netloc:
+                    valid_urls.add(url)
+                    if base_domain is None:
+                        base_domain = f"{parsed.scheme}://{parsed.netloc}"
+            except Exception:
+                continue
+        
+        if not valid_urls:
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "base_url": request.base_url or "",
+                    "total_count": 0,
+                    "tree": None,
+                    "error": "No valid URLs provided"
+                }
+            )
+        
+        # Use the same tree-building logic as the crawler
+        result = _build_url_tree(base_domain or request.base_url or list(valid_urls)[0], valid_urls)
+        
+        print(f"[API] Manual parse complete. Total: {result['total_count']}")
+        return JSONResponse(status_code=200, content=result)
+        
+    except Exception as e:
+        print(f"[API] Manual parse error: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        return JSONResponse(
+            status_code=200,
+            content={
+                "base_url": request.base_url or "",
+                "total_count": 0,
+                "tree": None,
+                "error": f"Parse failed: {str(e)}"
             }
         )
 
