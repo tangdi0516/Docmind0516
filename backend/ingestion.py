@@ -76,8 +76,8 @@ def get_user_documents(user_id: str):
     # But we can access the driver.
     
     # Let's use a direct SQLAlchemy query for metadata listing
-    from sqlalchemy import create_engine, text
-    engine = create_engine(DATABASE_URL)
+    from sqlalchemy import text
+    from database import engine
     
     # The table name is usually langchain_pg_embedding
     # We need to join with collection table to filter by collection_name if needed, 
@@ -128,8 +128,8 @@ def delete_user_document(user_id: str, source: str):
     # We need to find IDs first.
     
     # Again, direct SQL is most reliable for "delete by metadata" in this specific implementation
-    from sqlalchemy import create_engine, text
-    engine = create_engine(DATABASE_URL)
+    from sqlalchemy import text
+    from database import engine
     
     sql = text("""
         DELETE FROM langchain_pg_embedding 

@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import create_engine, Column, String, Integer, Text, JSON
+from sqlalchemy import create_engine, Column, String, Integer, Text, JSON, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -7,18 +7,30 @@ from sqlalchemy.orm import sessionmaker
 # Fallback to local sqlite for development if not set (optional, but good for safety)
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Ensure we are using the correct driver for async/sync if needed, 
-# but for simplicity we use standard psycopg2 sync driver here.
-# Railway URLs often start with postgres://, SQLAlchemy needs postgresql://
-if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+print(f"DEBUG: Raw DATABASE_URL found: {'Yes' if DATABASE_URL else 'No'}")
+
+if DATABASE_URL:
+    # Fix common protocol issues
+    # SQLAlchemy < 1.4 uses postgres://, but newer ones prefer postgresql://
+    # We also want to force the psycopg driver: postgresql+psycopg://
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
+    elif DATABASE_URL.startswith("postgresql://"):
+        DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
 
 if not DATABASE_URL:
     # Fallback for local dev without Postgres
     DATABASE_URL = "sqlite:///./local_dev.db"
     print("WARNING: DATABASE_URL not found, using local SQLite database.")
 
-engine = create_engine(DATABASE_URL)
+print(f"DEBUG: Final DATABASE_URL protocol: {DATABASE_URL.split('://')[0]}")
+
+try:
+    engine = create_engine(DATABASE_URL)
+    print("DEBUG: Database engine created successfully.")
+except Exception as e:
+    print(f"CRITICAL ERROR: Failed to create database engine. Error: {e}")
+    raise e
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
@@ -35,6 +47,11 @@ class UserSettings(Base):
     initial_message = Column(String, default="Hello! How can I help you today?")
 
 def init_db():
+    # Enable pgvector extension if not exists (Required for Supabase/Postgres vector search)
+    with engine.connect() as connection:
+        connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        connection.commit()
+    
     Base.metadata.create_all(bind=engine)
 
 def get_db():
