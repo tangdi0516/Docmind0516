@@ -53,7 +53,9 @@ const WidgetGenerator = () => {
         formData.append('file', file);
 
         try {
-            setSaving(true); // Re-using saving state for upload indication
+            setSaving(true);
+
+            // First, upload the logo to get the URL
             const response = await axios.post(`${API_BASE_URL}/upload/logo`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
@@ -61,15 +63,22 @@ const WidgetGenerator = () => {
                 }
             });
             const newLogoUrl = response.data.url;
-            setSettings(prev => ({ ...prev, header_logo: newLogoUrl }));
 
-            // Save immediately to backend so iframe can fetch it
+            // Fetch current settings to preserve all fields
+            const currentSettingsRes = await axios.get(`${API_BASE_URL}/user/settings`, {
+                headers: { 'user-id': user.id }
+            });
+
+            // Save to backend with the new logo URL
             await axios.post(`${API_BASE_URL}/user/settings`, {
-                ...settings,
+                ...currentSettingsRes.data,
                 header_logo: newLogoUrl
             }, {
                 headers: { 'user-id': user.id }
             });
+
+            // Update local state
+            setSettings(prev => ({ ...prev, header_logo: newLogoUrl }));
 
             // Force iframe refresh
             setLastUpdated(Date.now());
