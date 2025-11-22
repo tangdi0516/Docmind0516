@@ -8,11 +8,13 @@ const WidgetGenerator = () => {
     const [copiedEmbed, setCopiedEmbed] = useState(false);
     const [copiedIframe, setCopiedIframe] = useState(false);
     const [settings, setSettings] = useState({
+        bot_name: 'DocMind',
         widget_color: '#4F46E5',
         header_logo: '',
         initial_message: 'Hello! How can I help you today?'
     });
     const [saving, setSaving] = useState(false);
+    const [lastUpdated, setLastUpdated] = useState(Date.now());
 
     // [Temporary] Switch to localhost
     const API_BASE_URL = 'https://docmind0516-production.up.railway.app';
@@ -58,7 +60,20 @@ const WidgetGenerator = () => {
                     'user-id': user.id
                 }
             });
-            setSettings({ ...settings, header_logo: response.data.url });
+            const newLogoUrl = response.data.url;
+            setSettings(prev => ({ ...prev, header_logo: newLogoUrl }));
+
+            // Save immediately to backend so iframe can fetch it
+            await axios.post(`${API_BASE_URL}/user/settings`, {
+                ...settings,
+                header_logo: newLogoUrl
+            }, {
+                headers: { 'user-id': user.id }
+            });
+
+            // Force iframe refresh
+            setLastUpdated(Date.now());
+
         } catch (error) {
             console.error("Error uploading logo:", error);
             alert("Failed to upload logo");
@@ -88,11 +103,8 @@ const WidgetGenerator = () => {
                 headers: { 'user-id': user.id }
             });
 
-            // Force iframe refresh by updating key or src query param
-            const iframe = document.getElementById('preview-iframe');
-            if (iframe) {
-                iframe.src = iframe.src;
-            }
+            // Force iframe refresh
+            setLastUpdated(Date.now());
 
             alert("Widget settings saved!");
         } catch (error) {
@@ -113,6 +125,7 @@ const WidgetGenerator = () => {
                 });
                 setSettings(prev => ({
                     ...prev,
+                    bot_name: response.data.bot_name || 'DocMind',
                     widget_color: response.data.widget_color || '#4F46E5',
                     header_logo: response.data.header_logo || '',
                     initial_message: response.data.initial_message || 'Hello! How can I help you today?'
@@ -142,6 +155,16 @@ const WidgetGenerator = () => {
                             <h3 className="text-lg font-bold text-slate-900">Appearance</h3>
                         </div>
                         <div className="p-6 space-y-6">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-2">Bot Name</label>
+                                <input
+                                    type="text"
+                                    value={settings.bot_name}
+                                    onChange={(e) => setSettings({ ...settings, bot_name: e.target.value })}
+                                    placeholder="e.g. DocMind Assistant"
+                                    className="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-2.5 text-slate-900 focus:border-indigo-500 focus:ring-indigo-500/20 transition-all text-sm"
+                                />
+                            </div>
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-2">Widget Color</label>
                                 <div className="flex items-center gap-3">
@@ -207,6 +230,7 @@ const WidgetGenerator = () => {
                         <div className="p-8 bg-slate-50 flex justify-center">
                             <div className="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200 h-[500px] relative">
                                 <iframe
+                                    key={lastUpdated}
                                     id="preview-iframe"
                                     src={embedUrl}
                                     className="w-full h-full"

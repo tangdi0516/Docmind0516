@@ -282,7 +282,7 @@ const WidgetChat = () => {
                             </button>
                         </div>
                         <div className="text-center mt-2">
-                            <a href="https://docmind.com" target="_blank" rel="noopener noreferrer" className="text-[10px] font-medium text-slate-300 hover:text-slate-500 transition-colors flex items-center justify-center gap-1">
+                            <a href="https://docmind-frontend-app.vercel.app" target="_blank" rel="noopener noreferrer" className="text-[10px] font-medium text-slate-300 hover:text-slate-500 transition-colors flex items-center justify-center gap-1">
                                 <Zap className="w-3 h-3" /> Powered by DocMind
                             </a>
                         </div>
