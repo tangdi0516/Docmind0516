@@ -87,16 +87,11 @@ const WidgetGenerator = () => {
 
         try {
             setSaving(true);
-            // Fetch current settings to ensure we don't overwrite other fields
-            const currentSettingsRes = await axios.get(`${API_BASE_URL}/user/settings`, {
-                headers: { 'user-id': user.id }
-            });
 
+            // Save to backend using current local settings (preserving other inputs)
             await axios.post(`${API_BASE_URL}/user/settings`, {
-                ...currentSettingsRes.data,
-                widget_color: settings.widget_color,
+                ...settings,
                 header_logo: '', // Explicitly empty
-                initial_message: settings.initial_message
             }, {
                 headers: { 'user-id': user.id }
             });
