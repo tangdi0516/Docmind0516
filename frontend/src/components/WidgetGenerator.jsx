@@ -21,7 +21,7 @@ const WidgetGenerator = () => {
 
     // Construct the embed URL based on current location
     const baseUrl = window.location.origin;
-    const embedUrl = `${baseUrl}/embed/${user.id}`;
+    const embedUrl = `${baseUrl}/embed/${user.id}?t=${lastUpdated}`;
 
     const iframeCode = `<iframe 
     src="${embedUrl}" 
