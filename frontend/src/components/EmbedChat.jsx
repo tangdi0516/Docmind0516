@@ -53,7 +53,7 @@ const EmbedChat = () => {
 
     const fetchSettings = async (uid) => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/user/settings`, {
+            const response = await axios.get(`${API_BASE_URL}/user/settings?t=${Date.now()}`, {
                 headers: { 'user-id': uid }
             });
             const name = response.data.bot_name || 'DocMind';

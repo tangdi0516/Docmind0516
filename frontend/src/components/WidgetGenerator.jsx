@@ -211,7 +211,6 @@ const WidgetGenerator = () => {
                                             <img src={settings.header_logo} alt="Logo Preview" className="w-full h-full object-cover" />
                                         </div>
                                         <div className="flex-1">
-                                            <p className="text-xs text-slate-500 mb-1 truncate max-w-[150px]">{settings.header_logo.split('/').pop()}</p>
                                             <button
                                                 onClick={handleRemoveLogo}
                                                 className="text-xs text-red-600 hover:text-red-700 font-medium"
