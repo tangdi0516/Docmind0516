@@ -25,6 +25,14 @@ if DATABASE_URL:
         else:
             DATABASE_URL += "?sslmode=require"
 
+    # Validation: Check for missing '@' symbol which causes confusing "invalid port" errors
+    if "@" not in DATABASE_URL:
+        print("CRITICAL WARNING: DATABASE_URL is missing the '@' separator between password and host.")
+        print("Please check your Railway 'DATABASE_URL' variable.")
+        print("Format should be: postgresql://user:password@host:port/dbname")
+        # We won't raise here to allow for some edge cases (like local sqlite), 
+        # but for postgres it's almost certainly an error.
+
 if not DATABASE_URL:
     # Fallback for local dev without Postgres
     DATABASE_URL = "sqlite:///./local_dev.db"
