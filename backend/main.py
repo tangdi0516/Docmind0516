@@ -23,6 +23,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/version")
+async def version():
+    return {"version": "1.2.0", "deployed_at": "2025-11-22"}
+
 
 # Initialize Database Tables
 from database import init_db
