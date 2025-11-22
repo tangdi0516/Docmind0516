@@ -135,7 +135,16 @@ async def crawl_website(base_url: str, max_pages=500, max_time=120):
                 visited = set()
                 to_visit = [base_url]
                 session = requests.Session()
-                session.headers.update({'User-Agent': random.choice(USER_AGENTS)})
+                # More realistic browser headers to avoid 403
+                session.headers.update({
+                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.5',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'DNT': '1',
+                    'Connection': 'keep-alive',
+                    'Upgrade-Insecure-Requests': '1'
+                })
                 
                 while to_visit and len(discovered_urls) < max_pages:
                     if time.time() - start_time > max_time: 
