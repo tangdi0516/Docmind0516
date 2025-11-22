@@ -53,8 +53,10 @@ const Upload = () => {
             clearTimeout(timeoutId);
 
             if (response.data.total_count === 0) {
+                const debugInfo = response.data.debug_logs ? response.data.debug_logs.join('\n') : '';
+                console.error("Crawler Debug Logs:", debugInfo);
                 setStatus('error');
-                setMessage('No pages found. Please try: ✓ Check if the URL is correct ✓ Try a different website ✓ Some sites block automated crawlers. Contact us if you need help with this specific site.');
+                setMessage(`No pages found. Debug info:\n${debugInfo || 'Connection failed'}`);
                 return;
             }
 
@@ -68,16 +70,10 @@ const Upload = () => {
             console.error(error);
             if (error.code === 'ECONNABORTED' || error.name === 'AbortError') {
                 setStatus('error');
-                setMessage('Scan timed out (>2 min). The website is very large or slow. Try: ✓ A more specific URL (e.g., /products page) ✓ Smaller sites ✓ Contact support for bulk imports.');
-            } else if (error.response?.status === 403) {
-                setStatus('error');
-                setMessage('Access denied (403). The website is blocking our crawler. Try: ✓ A different website ✓ Manually import URLs ✓ Contact us for enterprise crawling solutions.');
-            } else if (error.response?.status >= 500) {
-                setStatus('error');
-                setMessage('Server error. The website may be down or overloaded. Try again later or use a different URL.');
+                setMessage('Scan timed out (>2 min). The website is very large or slow.');
             } else {
                 setStatus('error');
-                setMessage('Failed to scan website. Please check: ✓ URL is valid and accessible ✓ Website allows automated access ✓ Try a simpler URL first.');
+                setMessage('Failed to scan website. Please check the URL and try again.');
             }
         }
     };
