@@ -215,28 +215,6 @@ const WidgetGenerator = () => {
                             </div>
                         </div>
                     </div>
-
-                    {/* Embed Code Section */}
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                        <div className="p-6 border-b border-slate-200 flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <Code className="w-5 h-5 text-indigo-600" />
-                                <h3 className="font-bold text-slate-900">Iframe Embed</h3>
-                            </div>
-                            <button
-                                onClick={() => handleCopy(iframeCode, setCopiedIframe)}
-                                className="text-sm font-medium text-indigo-600 hover:text-indigo-700 flex items-center gap-1.5"
-                            >
-                                {copiedIframe ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                                {copiedIframe ? 'Copied!' : 'Copy Code'}
-                            </button>
-                        </div>
-                        <div className="p-6 bg-slate-900 overflow-x-auto">
-                            <pre className="text-slate-300 font-mono text-sm whitespace-pre-wrap break-all">
-                                {iframeCode}
-                            </pre>
-                        </div>
-                    </div>
                 </div>
             </div>
 
