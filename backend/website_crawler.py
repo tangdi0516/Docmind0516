@@ -69,6 +69,9 @@ async def crawl_website(base_url: str, max_pages=500, max_time=120):
                         # Extract URLs (simple regex is faster and more robust for XML variations)
                         urls = re.findall(r'<loc>(https?://[^<]+)</loc>', resp.text)
                         for url in urls:
+                            # Skip sitemap URLs themselves, only keep actual pages
+                            if 'sitemap' in url.lower() and url.lower().endswith('.xml'):
+                                continue
                             if normalized_domain in url or base_domain in url:
                                 discovered_urls.add(url.strip())
                 except Exception:
