@@ -46,7 +46,7 @@ async def crawl_website(base_url: str, max_pages=500, max_time=120):
         sitemap_urls = set()
         try:
             # 1. Check robots.txt
-            robots_url = f"{parsed_base.scheme}://{base_domain}/robots.txt"
+            robots_url = f"{parsed.scheme}://{base_domain}/robots.txt"
             resp = requests.get(robots_url, timeout=5, headers={'User-Agent': 'Googlebot/2.1'})
             if resp.status_code == 200:
                 for line in resp.text.splitlines():
@@ -54,8 +54,8 @@ async def crawl_website(base_url: str, max_pages=500, max_time=120):
                         sitemap_urls.add(line.split(':', 1)[1].strip())
             
             # 2. Standard locations
-            sitemap_urls.add(f"{parsed_base.scheme}://{base_domain}/sitemap.xml")
-            sitemap_urls.add(f"{parsed_base.scheme}://{base_domain}/sitemap_index.xml")
+            sitemap_urls.add(f"{parsed.scheme}://{base_domain}/sitemap.xml")
+            sitemap_urls.add(f"{parsed.scheme}://{base_domain}/sitemap_index.xml")
             
             for sm_url in list(sitemap_urls):
                 try:
